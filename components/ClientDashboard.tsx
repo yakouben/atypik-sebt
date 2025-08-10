@@ -226,7 +226,7 @@ export default function ClientDashboard() {
             </div>
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
-                Bonjour, {userProfile?.full_name || 'Utilisateur'}
+                Bienvenue !
               </h1>
               <p className="text-sm text-gray-600">Découvrez des hébergements uniques</p>
             </div>
@@ -643,7 +643,7 @@ export default function ClientDashboard() {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900">
-                    {userProfile?.full_name || 'Utilisateur'}
+                    Mon Profil
                   </h3>
                   <p className="text-gray-600">Client</p>
                 </div>
