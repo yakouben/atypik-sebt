@@ -301,17 +301,7 @@ export default function SignInModal({ isOpen, onClose, initialStep = 'login', in
                     </button>
                   </div>
 
-                  <div className="text-right">
-                    <button 
-                      type="button" 
-                      className="text-[#4A7C59] hover:text-[#2C3E37] text-xs sm:text-sm font-medium"
-                      onClick={handleForgotPassword}
-                      disabled={isLoading}
-                    >
-                      Mot de passe oublié ?
-                    </button>
-                  </div>
-
+                 
                   <Button
                     type="submit"
                     className="w-full bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] hover:from-[#2C3E37] hover:to-[#4A7C59] text-white py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#4A7C59]/25"

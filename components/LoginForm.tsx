@@ -162,12 +162,7 @@ export default function LoginForm() {
                 </button>
               </p>
               <p className="text-gray-600">
-                <button
-                  onClick={() => router.push('/auth/reset-password')}
-                  className="text-[#4A7C59] hover:text-[#2C3E37] font-medium transition-colors"
-                >
-                  Mot de passe oublié ?
-                </button>
+                
               </p>
             </div>
           </div>
