@@ -41,7 +41,8 @@ import {
   ChevronDown,
   Search,
   CheckCircle2,
-  Ban
+  Ban,
+  X
 } from 'lucide-react';
 import { useAuthContext } from './AuthProvider';
 import PropertyForm from './PropertyForm';
@@ -110,6 +111,8 @@ export default function GlampingDashboard() {
   const [filteredBookings, setFilteredBookings] = useState<Reservation[]>([]);
   const [updatingBooking, setUpdatingBooking] = useState<string | null>(null);
   const [deletingBooking, setDeletingBooking] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string>('');
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -233,7 +236,16 @@ export default function GlampingDashboard() {
   const handlePropertySuccess = async () => {
     setShowPropertyForm(false);
     setEditingProperty(null);
-    await loadProperties();
+    
+    // Show success message
+    setSuccessMessage(editingProperty ? 'Propriété mise à jour avec succès !' : 'Propriété ajoutée avec succès !');
+    setShowSuccessMessage(true);
+    
+    // Hide success message after 5 seconds
+    setTimeout(() => setShowSuccessMessage(false), 5000);
+    
+    // Refresh the entire dashboard data
+    await loadData();
   };
 
   const handleReservationClick = (e: React.MouseEvent, propertyId: string, propertyName: string) => {
@@ -483,6 +495,30 @@ export default function GlampingDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4 shadow-lg max-w-md">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-green-800">{successMessage}</p>
+              </div>
+              <button
+                onClick={() => setShowSuccessMessage(false)}
+                className="flex-shrink-0 text-green-400 hover:text-green-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Bonjour Banner */}
