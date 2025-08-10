@@ -544,11 +544,11 @@ export default function GlampingDashboard() {
 
         {/* Tab Navigation */}
         <div className="bg-white border-b border-gray-200 rounded-t-2xl mb-8">
-          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
-            <div className="flex space-x-1 sm:space-x-2 md:space-x-4 lg:space-x-8 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="max-w-7xl mx-auto px-1 sm:px-2 md:px-4 lg:px-8">
+            <div className="flex space-x-0.5 sm:space-x-1 md:space-x-2 lg:space-x-4 xl:space-x-8 overflow-x-auto pb-2 scrollbar-hide">
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className={`py-3 sm:py-4 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
+                className={`py-2 sm:py-3 md:py-4 px-1 sm:px-2 md:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'dashboard'
                     ? 'border-[#4A7C59] text-[#4A7C59]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -556,13 +556,14 @@ export default function GlampingDashboard() {
               >
                 <div className="flex items-center space-x-1 sm:space-x-2">
                   <LayoutDashboard className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="hidden sm:inline">Vue d'ensemble</span>
-                  <span className="sm:hidden">Vue d'ensemble</span>
+                  <span className="hidden lg:inline">Vue d'ensemble</span>
+                  <span className="hidden sm:inline lg:hidden">Vue d'ensemble</span>
+                  <span className="sm:hidden">Vue</span>
                 </div>
               </button>
               <button
                 onClick={() => setActiveTab('properties')}
-                className={`py-3 sm:py-4 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
+                className={`py-2 sm:py-3 md:py-4 px-1 sm:px-2 md:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'properties'
                     ? 'border-[#4A7C59] text-[#4A7C59]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -570,13 +571,14 @@ export default function GlampingDashboard() {
               >
                 <div className="flex items-center space-x-1 sm:space-x-2">
                   <Home className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="hidden sm:inline">Propriétés</span>
-                  <span className="sm:hidden">Propriétés</span>
+                  <span className="hidden lg:inline">Propriétés</span>
+                  <span className="hidden sm:inline lg:hidden">Propriétés</span>
+                  <span className="sm:hidden">Props</span>
                 </div>
               </button>
               <button
                 onClick={() => setActiveTab('bookings')}
-                className={`py-3 sm:py-4 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
+                className={`py-2 sm:py-3 md:py-4 px-1 sm:px-2 md:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'bookings'
                     ? 'border-[#4A7C59] text-[#4A7C59]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -584,10 +586,11 @@ export default function GlampingDashboard() {
               >
                 <div className="flex items-center space-x-1 sm:space-x-2">
                   <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="hidden sm:inline">Réservations</span>
-                  <span className="sm:hidden">Réservations</span>
+                  <span className="hidden lg:inline">Réservations</span>
+                  <span className="hidden sm:inline lg:hidden">Réservations</span>
+                  <span className="sm:hidden">Réserv</span>
                   {bookings.length > 0 && (
-                    <span className="bg-[#4A7C59] text-white text-xs rounded-full px-1.5 sm:px-2 py-0.5 sm:py-1 min-w-[16px] sm:min-w-[20px] text-center text-xs">
+                    <span className="bg-[#4A7C59] text-white text-xs rounded-full px-1 sm:px-1.5 md:px-2 py-0.5 sm:py-1 min-w-[14px] sm:min-w-[16px] md:min-w-[20px] text-center text-xs">
                       {bookings.length}
                     </span>
                   )}
