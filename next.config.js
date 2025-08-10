@@ -13,7 +13,7 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
-    optimizeCss: true,
+    // optimizeCss: true, // Disabled due to critters module issues
     optimizePackageImports: [
       'lucide-react', 
       '@radix-ui/react-icons',

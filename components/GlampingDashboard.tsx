@@ -1205,7 +1205,7 @@ export default function GlampingDashboard() {
       )}
 
       {/* Reservation Modal */}
-      {showReservationModal && (
+      {showReservationModal && selectedPropertyId && (
         <ReservationModal
           isOpen={showReservationModal}
           onClose={handleCloseReservationModal}
