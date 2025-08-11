@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       .from('bookings')
       .select(`
         *,
-        properties!inner (
+        properties (
           id,
           name,
           location,
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       console.log('🔍 Processing booking:', booking);
       console.log('🔍 Property data:', booking.properties);
       
-      // Handle missing property data
+      // Handle missing property data - property might be null if it was deleted
       const propertyData = booking.properties || {};
       const clientData = booking.profiles || {};
       
@@ -80,13 +80,13 @@ export async function GET(request: NextRequest) {
         travel_type: booking.travel_type,
         created_at: booking.created_at,
         updated_at: booking.updated_at,
-        property: {
-          id: propertyData.id || 'unknown',
-          name: propertyData.name || 'Propriété inconnue',
+        property: propertyData.id ? {
+          id: propertyData.id,
+          name: propertyData.name || 'Nom inconnu',
           location: propertyData.location || 'Localisation inconnue',
           images: propertyData.images || [],
           price_per_night: propertyData.price_per_night || 0
-        },
+        } : null,
         client: {
           id: clientData.id || 'unknown',
           full_name: clientData.full_name || 'Client inconnu',

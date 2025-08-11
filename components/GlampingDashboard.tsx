@@ -759,7 +759,7 @@ export default function GlampingDashboard() {
                           >
                             <Calendar className="w-4 h-4" />
                             <span>Reserve</span>
-                            <span className="ml-1 bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full font-medium min-w-[20px] text-center">
+                            <span className="ml-1 bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full font-medium min-w-[20px] text-center text-xs">
                               {getReservationCount(property.id)}
                             </span>
                           </button>
@@ -1061,11 +1061,11 @@ export default function GlampingDashboard() {
                           <div className="flex items-start justify-between">
                             <div>
                               <h4 className="text-xl font-bold text-gray-900 mb-1">
-                                {booking.property?.name || 'Propriété supprimée'}
+                                {booking.property ? booking.property.name : 'Propriété supprimée'}
                               </h4>
                               <p className="text-gray-600 flex items-center gap-2">
                                 <MapPin className="w-4 h-4" />
-                                {booking.property?.location || 'Localisation inconnue'}
+                                {booking.property ? booking.property.location : 'Localisation inconnue'}
                               </p>
                             </div>
                             <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusColor(booking.status)}`}>
@@ -1076,7 +1076,7 @@ export default function GlampingDashboard() {
                             </div>
                           </div>
 
-                          {/* Property Image */}
+                          {/* Property Image - Only show if property exists */}
                           {booking.property?.images && booking.property.images.length > 0 && (
                             <div className="w-full h-32 rounded-lg overflow-hidden">
                               <img
@@ -1084,6 +1084,16 @@ export default function GlampingDashboard() {
                                 alt={booking.property.name}
                                 className="w-full h-full object-cover"
                               />
+                            </div>
+                          )}
+
+                          {/* Show placeholder if property was deleted */}
+                          {!booking.property && (
+                            <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                              <div className="text-center text-gray-500">
+                                <Home className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                                <p className="text-sm">Propriété supprimée</p>
+                              </div>
                             </div>
                           )}
 
