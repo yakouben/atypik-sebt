@@ -218,112 +218,120 @@ export default function ClientDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-              <TreePine className="w-6 h-6 text-white" />
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                <TreePine className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">
+                  Bienvenue !
+                </h1>
+                <p className="text-sm text-gray-600">Découvrez des hébergements uniques</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                Bienvenue !
-              </h1>
-              <p className="text-sm text-gray-600">Découvrez des hébergements uniques</p>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input 
+                  type="text" 
+                  placeholder="Rechercher des propriétés..." 
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent w-64"
+                />
+              </div>
+              <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
+                <User className="w-5 h-5" />
+                <span>Profil</span>
+              </button>
             </div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Rechercher des propriétés..." 
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent w-64"
-              />
-            </div>
-            <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
-              <User className="w-5 h-5" />
-              <span>Profil</span>
-            </button>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-3">
-        <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-8">
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`flex items-center space-x-2 transition-colors ${
-              activeTab === 'dashboard' 
-                ? 'text-green-600 font-medium' 
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            <span>Tableau de bord</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('properties')}
-            className={`flex items-center space-x-2 transition-colors ${
-              activeTab === 'properties' 
-                ? 'text-green-600 font-medium' 
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <Home className="w-5 h-5" />
-            <span>Parcourir</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('bookings')}
-            className={`flex items-center space-x-2 transition-colors ${
-              activeTab === 'bookings' 
-                ? 'text-green-600 font-medium' 
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <Calendar className="w-5 h-5" />
-            <span>Mes réservations</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`flex items-center space-x-2 transition-colors ${
-              activeTab === 'profile' 
-                ? 'text-green-600 font-medium' 
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <User className="w-5 h-5" />
-            <span>Profil</span>
-          </button>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button 
-              onClick={handleSignOut}
-              className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-sm border border-red-200"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>Déconnexion</span>
-            </button>
+      <nav className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-8">
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`flex items-center space-x-2 transition-colors ${
+                  activeTab === 'dashboard' 
+                    ? 'text-green-600 font-medium' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <LayoutDashboard className="w-5 h-5" />
+                <span>Tableau de bord</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('properties')}
+                className={`flex items-center space-x-2 transition-colors ${
+                  activeTab === 'properties' 
+                    ? 'text-green-600 font-medium' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Home className="w-5 h-5" />
+                <span>Parcourir</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('bookings')}
+                className={`flex items-center space-x-2 transition-colors ${
+                  activeTab === 'bookings' 
+                    ? 'text-green-600 font-medium' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Calendar className="w-5 h-5" />
+                <span>Mes réservations</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`flex items-center space-x-2 transition-colors ${
+                  activeTab === 'profile' 
+                    ? 'text-green-600 font-medium' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <User className="w-5 h-5" />
+                <span>Profil</span>
+              </button>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button 
+                onClick={handleSignOut}
+                className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-sm border border-red-200"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>Déconnexion</span>
+              </button>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <div className="p-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
-            {/* Welcome Section */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                Bienvenue sur AtypikHouse
-              </h2>
-              <p className="text-gray-600 mb-4">
-                Découvrez des hébergements insolites et éco-responsables en France et en Europe.
-              </p>
-              <button className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] hover:from-[#2C3E37] hover:to-[#4A7C59] text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#4A7C59]/25">
-                Commencer à explorer
-              </button>
+            {/* Welcome Section - Updated to match owner dashboard design */}
+            <div className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div className="mb-4 sm:mb-0">
+                  <h2 className="text-2xl sm:text-3xl font-bold mb-2">
+                    Bienvenue sur AtypikHouse !
+                  </h2>
+                  <p className="text-green-100 text-lg">
+                    Découvrez des hébergements insolites et éco-responsables en France et en Europe
+                  </p>
+                </div>
+                <button className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-medium transition-all hover:bg-white/30 hover:scale-105 shadow-lg">
+                  Commencer à explorer
+                </button>
+              </div>
             </div>
 
             {/* Enhanced Stats Cards */}
@@ -365,7 +373,7 @@ export default function ClientDashboard() {
             </div>
 
             {/* My Bookings Section */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900">Mes réservations récentes</h3>
