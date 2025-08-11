@@ -542,64 +542,107 @@ export default function GlampingDashboard() {
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="bg-white border-b border-gray-200 rounded-t-2xl mb-6 sm:mb-8">
-          <div className="max-w-7xl mx-auto px-0.5 sm:px-1 md:px-2 lg:px-4 xl:px-8">
-            <div className="grid grid-cols-3 sm:flex sm:space-x-0 sm:space-x-0.5 md:space-x-1 lg:space-x-2 xl:space-x-4 overflow-x-auto pb-2 scrollbar-hide">
+        {/* Modern Tab Navigation */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 sm:mb-8 overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-3 sm:flex sm:justify-start">
+              {/* Vue d'ensemble Tab */}
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className={`w-full sm:w-auto py-3 sm:py-2.5 md:py-3 lg:py-4 px-2 sm:px-1 md:px-1.5 lg:px-2 xl:px-3 border-b-2 font-medium text-xs sm:text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 flex items-center justify-center sm:justify-start ${
+                className={`relative group transition-all duration-300 ease-in-out ${
                   activeTab === 'dashboard'
-                    ? 'border-[#4A7C59] text-[#4A7C59]'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
               >
-                <div className="flex items-center space-x-1 sm:space-x-1 md:space-x-1.5 lg:space-x-2">
-                  <LayoutDashboard className="w-4 h-4 sm:w-4 md:w-5 lg:w-5" />
-                  <span className="hidden xl:inline">Vue d'ensemble</span>
-                  <span className="hidden lg:inline xl:hidden">Vue d'ensemble</span>
-                  <span className="hidden md:inline lg:hidden">Vue d'ensemble</span>
-                  <span className="hidden sm:inline md:hidden">Vue d'ensemble</span>
-                  <span className="sm:hidden">Vue</span>
+                <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
+                  <div className="relative">
+                    <LayoutDashboard className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${
+                      activeTab === 'dashboard' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
+                    }`} />
+                  </div>
+                  <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
+                    activeTab === 'dashboard' ? 'font-semibold' : 'font-medium'
+                  }`}>
+                    <span className="sm:hidden">Vue</span>
+                    <span className="hidden sm:inline">Vue d'ensemble</span>
+                  </span>
+                  
+                  {/* Animated Underline */}
+                  <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-out ${
+                    activeTab === 'dashboard' 
+                      ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
+                      : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
+                  }`} />
                 </div>
               </button>
+
+              {/* Propriétés Tab */}
               <button
                 onClick={() => setActiveTab('properties')}
-                className={`w-full sm:w-auto py-3 sm:py-2.5 md:py-3 lg:py-4 px-2 sm:px-1 md:px-1.5 lg:px-2 xl:px-3 border-b-2 font-medium text-xs sm:text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 flex items-center justify-center sm:justify-start ${
+                className={`relative group transition-all duration-300 ease-in-out ${
                   activeTab === 'properties'
-                    ? 'border-[#4A7C59] text-[#4A7C59]'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
               >
-                <div className="flex items-center space-x-1 sm:space-x-1 md:space-x-1.5 lg:space-x-2">
-                  <Home className="w-4 h-4 sm:w-4 md:w-5 lg:w-5" />
-                  <span className="hidden xl:inline">Propriétés</span>
-                  <span className="hidden lg:inline xl:hidden">Propriétés</span>
-                  <span className="hidden md:inline lg:hidden">Propriétés</span>
-                  <span className="hidden sm:inline md:hidden">Propriétés</span>
-                  <span className="sm:hidden">Props</span>
+                <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
+                  <div className="relative">
+                    <Home className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${
+                      activeTab === 'properties' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
+                    }`} />
+                  </div>
+                  <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
+                    activeTab === 'properties' ? 'font-semibold' : 'font-medium'
+                  }`}>
+                    <span className="sm:hidden">Props</span>
+                    <span className="hidden sm:inline">Propriétés</span>
+                  </span>
+                  
+                  {/* Animated Underline */}
+                  <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-out ${
+                    activeTab === 'properties' 
+                      ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
+                      : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
+                  }`} />
                 </div>
               </button>
+
+              {/* Réservations Tab */}
               <button
                 onClick={() => setActiveTab('bookings')}
-                className={`w-full sm:w-auto py-3 sm:py-2.5 md:py-3 lg:py-4 px-2 sm:px-1 md:px-1.5 lg:px-2 xl:px-3 border-b-2 font-medium text-xs sm:text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 flex items-center justify-center sm:justify-start ${
+                className={`relative group transition-all duration-300 ease-in-out ${
                   activeTab === 'bookings'
-                    ? 'border-[#4A7C59] text-[#4A7C59]'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
               >
-                <div className="flex items-center space-x-1 sm:space-x-1 md:space-x-1.5 lg:space-x-2">
-                  <Calendar className="w-4 h-4 sm:w-4 md:w-5 lg:w-5" />
-                  <span className="hidden xl:inline">Réservations</span>
-                  <span className="hidden lg:inline xl:hidden">Réservations</span>
-                  <span className="hidden md:inline lg:hidden">Réservations</span>
-                  <span className="hidden sm:inline md:hidden">Réservations</span>
-                  <span className="sm:hidden">Réserv</span>
-                  {bookings.length > 0 && (
-                    <span className="bg-[#4A7C59] text-white text-xs rounded-full px-1 sm:px-1 md:px-1.5 lg:px-2 py-0.5 sm:py-0.5 md:py-1 min-w-[14px] sm:min-w-[14px] md:min-w-[16px] lg:min-w-[20px] text-center text-xs">
-                      {bookings.length}
-                    </span>
-                  )}
+                <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
+                  <div className="relative">
+                    <Calendar className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${
+                      activeTab === 'bookings' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
+                    }`} />
+                    
+                    {/* Notification Badge */}
+                    {bookings.length > 0 && (
+                      <div className="absolute -top-1 -right-1 bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center shadow-lg border-2 border-white transform scale-100 group-hover:scale-110 transition-transform duration-200">
+                        {bookings.length}
+                      </div>
+                    )}
+                  </div>
+                  <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
+                    activeTab === 'bookings' ? 'font-semibold' : 'font-medium'
+                  }`}>
+                    <span className="sm:hidden">Réserv</span>
+                    <span className="hidden sm:inline">Réservations</span>
+                  </span>
+                  
+                  {/* Animated Underline */}
+                  <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-out ${
+                    activeTab === 'bookings' 
+                      ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
+                      : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
+                  }`} />
                 </div>
               </button>
             </div>
