@@ -543,19 +543,19 @@ export default function GlampingDashboard() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-white border-b border-gray-200 rounded-t-2xl mb-8">
-          <div className="max-w-7xl mx-auto px-1 sm:px-2 md:px-4 lg:px-8">
+        <div className="bg-white border-b border-gray-200 rounded-t-2xl mb-6 sm:mb-8">
+          <div className="max-w-7xl mx-auto px-0.5 sm:px-1 md:px-2 lg:px-4 xl:px-8">
             <div className="flex space-x-0 sm:space-x-0.5 md:space-x-1 lg:space-x-2 xl:space-x-4 overflow-x-auto pb-2 scrollbar-hide">
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className={`py-2 sm:py-3 md:py-4 px-1 sm:px-1.5 md:px-2 lg:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
+                className={`py-2 sm:py-2.5 md:py-3 lg:py-4 px-1 sm:px-1 md:px-1.5 lg:px-2 xl:px-3 border-b-2 font-medium text-xs sm:text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'dashboard'
                     ? 'border-[#4A7C59] text-[#4A7C59]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                  <LayoutDashboard className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className="flex items-center space-x-1 sm:space-x-1 md:space-x-1.5 lg:space-x-2">
+                  <LayoutDashboard className="w-4 h-4 sm:w-4 md:w-5 lg:w-5" />
                   <span className="hidden xl:inline">Vue d'ensemble</span>
                   <span className="hidden lg:inline xl:hidden">Vue d'ensemble</span>
                   <span className="hidden md:inline lg:hidden">Vue d'ensemble</span>
@@ -565,14 +565,14 @@ export default function GlampingDashboard() {
               </button>
               <button
                 onClick={() => setActiveTab('properties')}
-                className={`py-2 sm:py-3 md:py-4 px-1 sm:px-1.5 md:px-2 lg:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
+                className={`py-2 sm:py-2.5 md:py-3 lg:py-4 px-1 sm:px-1 md:px-1.5 lg:px-2 xl:px-3 border-b-2 font-medium text-xs sm:text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'properties'
                     ? 'border-[#4A7C59] text-[#4A7C59]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                  <Home className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className="flex items-center space-x-1 sm:space-x-1 md:space-x-1.5 lg:space-x-2">
+                  <Home className="w-4 h-4 sm:w-4 md:w-5 lg:w-5" />
                   <span className="hidden xl:inline">Propriétés</span>
                   <span className="hidden lg:inline xl:hidden">Propriétés</span>
                   <span className="hidden md:inline lg:hidden">Propriétés</span>
@@ -582,21 +582,21 @@ export default function GlampingDashboard() {
               </button>
               <button
                 onClick={() => setActiveTab('bookings')}
-                className={`py-2 sm:py-3 md:py-4 px-1 sm:px-1.5 md:px-2 lg:px-3 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
+                className={`py-2 sm:py-2.5 md:py-3 lg:py-4 px-1 sm:px-1 md:px-1.5 lg:px-2 xl:px-3 border-b-2 font-medium text-xs sm:text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'bookings'
                     ? 'border-[#4A7C59] text-[#4A7C59]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-center space-x-1 sm:space-x-1.5 md:space-x-2">
-                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className="flex items-center space-x-1 sm:space-x-1 md:space-x-1.5 lg:space-x-2">
+                  <Calendar className="w-4 h-4 sm:w-4 md:w-5 lg:w-5" />
                   <span className="hidden xl:inline">Réservations</span>
                   <span className="hidden lg:inline xl:hidden">Réservations</span>
                   <span className="hidden md:inline lg:hidden">Réservations</span>
                   <span className="hidden sm:inline md:hidden">Réservations</span>
                   <span className="sm:hidden">Réserv</span>
                   {bookings.length > 0 && (
-                    <span className="bg-[#4A7C59] text-white text-xs rounded-full px-1 sm:px-1.5 md:px-2 py-0.5 sm:py-1 min-w-[14px] sm:min-w-[16px] md:min-w-[20px] text-center text-xs">
+                    <span className="bg-[#4A7C59] text-white text-xs rounded-full px-1 sm:px-1 md:px-1.5 lg:px-2 py-0.5 sm:py-0.5 md:py-1 min-w-[14px] sm:min-w-[14px] md:min-w-[16px] lg:min-w-[20px] text-center text-xs">
                       {bookings.length}
                     </span>
                   )}
@@ -1061,11 +1061,11 @@ export default function GlampingDashboard() {
                           <div className="flex items-start justify-between">
                             <div>
                               <h4 className="text-xl font-bold text-gray-900 mb-1">
-                                {booking.property ? booking.property.name : 'Propriété supprimée'}
+                                {booking.property?.name || 'Propriété supprimée'}
                               </h4>
                               <p className="text-gray-600 flex items-center gap-2">
                                 <MapPin className="w-4 h-4" />
-                                {booking.property ? booking.property.location : 'Localisation inconnue'}
+                                {booking.property?.location || 'Localisation inconnue'}
                               </p>
                             </div>
                             <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusColor(booking.status)}`}>
@@ -1076,7 +1076,7 @@ export default function GlampingDashboard() {
                             </div>
                           </div>
 
-                          {/* Property Image - Only show if property exists */}
+                          {/* Property Image */}
                           {booking.property?.images && booking.property.images.length > 0 && (
                             <div className="w-full h-32 rounded-lg overflow-hidden">
                               <img
@@ -1084,16 +1084,6 @@ export default function GlampingDashboard() {
                                 alt={booking.property.name}
                                 className="w-full h-full object-cover"
                               />
-                            </div>
-                          )}
-
-                          {/* Show placeholder if property was deleted */}
-                          {!booking.property && (
-                            <div className="w-full h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                              <div className="text-center text-gray-500">
-                                <Home className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                                <p className="text-sm">Propriété supprimée</p>
-                              </div>
                             </div>
                           )}
 
