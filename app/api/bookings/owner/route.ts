@@ -60,8 +60,15 @@ export async function GET(request: NextRequest) {
 
     // Transform the data to match the expected format
     const transformedBookings = await Promise.all(bookings?.map(async (booking) => {
-      console.log('🔍 Processing booking:', booking);
-      console.log('🔍 Property data:', booking.properties);
+      console.log('🔍 Processing booking:', booking.id);
+      console.log('🔍 Raw booking data:', {
+        property_name: booking.property_name,
+        property_location: booking.property_location,
+        property_price_per_night: booking.property_price_per_night,
+        property_max_guests: booking.property_max_guests,
+        property_images: booking.property_images
+      });
+      console.log('🔍 Joined property data:', booking.properties);
       
       // Handle missing property data
       const propertyData = booking.properties || {};
@@ -71,6 +78,13 @@ export async function GET(request: NextRequest) {
       // This ensures property info is available even if property gets deleted
       const hasValidProperty = propertyData && propertyData.id && propertyData.name;
       const hasStoredPropertyData = booking.property_name && booking.property_location;
+      
+      console.log('🔍 Property data flags:', {
+        hasValidProperty,
+        hasStoredPropertyData,
+        storedName: booking.property_name,
+        storedLocation: booking.property_location
+      });
       
       // If no property data available, try to fetch it directly from properties table
       let fallbackPropertyData = null;
@@ -84,11 +98,34 @@ export async function GET(request: NextRequest) {
           
           if (fallbackProperty) {
             fallbackPropertyData = fallbackProperty;
+            console.log('🔍 Using fallback property data:', fallbackProperty);
           }
         } catch (error) {
           console.log('🔍 Could not fetch fallback property data for booking:', booking.id);
         }
       }
+      
+      const finalProperty = hasValidProperty ? {
+        id: propertyData.id,
+        name: propertyData.name,
+        location: propertyData.location || 'Localisation inconnue',
+        images: propertyData.images || [],
+        price_per_night: propertyData.price_per_night || 0
+      } : hasStoredPropertyData ? {
+        id: 'stored',
+        name: booking.property_name,
+        location: booking.property_location,
+        images: booking.property_images || [],
+        price_per_night: booking.property_price_per_night || 0
+      } : fallbackPropertyData ? {
+        id: fallbackPropertyData.id,
+        name: fallbackPropertyData.name,
+        location: fallbackPropertyData.location || 'Localisation inconnue',
+        images: fallbackPropertyData.images || [],
+        price_per_night: fallbackPropertyData.price_per_night || 0
+      } : null;
+      
+      console.log('🔍 Final property data for dashboard:', finalProperty);
       
       return {
         id: booking.id,
@@ -103,25 +140,7 @@ export async function GET(request: NextRequest) {
         travel_type: booking.travel_type,
         created_at: booking.created_at,
         updated_at: booking.updated_at,
-        property: hasValidProperty ? {
-          id: propertyData.id,
-          name: propertyData.name,
-          location: propertyData.location || 'Localisation inconnue',
-          images: propertyData.images || [],
-          price_per_night: propertyData.price_per_night || 0
-        } : hasStoredPropertyData ? {
-          id: 'stored',
-          name: booking.property_name,
-          location: booking.property_location,
-          images: booking.property_images || [],
-          price_per_night: booking.property_price_per_night || 0
-        } : fallbackPropertyData ? {
-          id: fallbackPropertyData.id,
-          name: fallbackPropertyData.name,
-          location: fallbackPropertyData.location || 'Localisation inconnue',
-          images: fallbackPropertyData.images || [],
-          price_per_night: fallbackPropertyData.price_per_night || 0
-        } : null,
+        property: finalProperty,
         client: {
           id: clientData.id || 'unknown',
           full_name: clientData.full_name || 'Client inconnu',
