@@ -40,17 +40,20 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
+      // Provide immediate feedback
       const result = await signIn(loginData.email, loginData.password);
 
       if (result.error) {
         setError(result.error.message || result.error);
+        setLoading(false);
       } else {
-        // Success - user will be redirected to their dashboard
+        // Success - show immediate feedback, don't wait for redirect
         console.log('Login successful');
+        // Keep loading state until redirect happens
+        // This prevents the button from flickering
       }
     } catch (error) {
       setError('Une erreur est survenue lors de la connexion');
-    } finally {
       setLoading(false);
     }
   };

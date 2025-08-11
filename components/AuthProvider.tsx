@@ -27,22 +27,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [lastRedirect, setLastRedirect] = useState<string>('');
 
   useEffect(() => {
     if (!auth.loading) {
       setIsInitialized(true);
       
-      console.log('Auth state changed:', { 
-        user: !!auth.user, 
-        userProfile: !!auth.userProfile, 
-        pathname 
-      });
-      
-      // Handle authentication state changes
+      // Handle authentication state changes with optimized redirects
       if (auth.user && auth.userProfile) {
         // User is authenticated and has a profile
         const userType = auth.userProfile.user_type;
-        console.log('User authenticated with profile:', userType);
         
         // Don't redirect if already on dashboard pages or auth pages
         const isOnDashboard = pathname.includes('/dashboard');
@@ -50,56 +44,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const isOnConfirmPage = pathname.includes('/auth/confirm');
         const isOnPropertyPage = pathname.includes('/properties/');
         
-        console.log('🔍 Redirect check:', {
-          pathname,
-          isOnDashboard,
-          isOnAuthPage,
-          isOnConfirmPage,
-          isOnPropertyPage,
-          shouldRedirect: !isOnDashboard && !isOnAuthPage && !isOnConfirmPage && !isOnPropertyPage
-        });
-        
         if (!isOnDashboard && !isOnAuthPage && !isOnConfirmPage && !isOnPropertyPage) {
-          // Redirect based on user type
-          if (userType === 'owner') {
-            console.log('Redirecting to owner dashboard');
-            router.push('/dashboard/owner');
-          } else if (userType === 'client') {
-            console.log('Redirecting to client dashboard');
-            router.push('/dashboard/client');
+          // Prevent rapid redirects
+          const redirectPath = userType === 'owner' ? '/dashboard/owner' : '/dashboard/client';
+          if (lastRedirect !== redirectPath) {
+            setLastRedirect(redirectPath);
+            router.push(redirectPath);
           }
-        } else {
-          console.log('✅ No redirect needed - user can stay on current page');
         }
       } else if (auth.user && !auth.userProfile) {
-        // User is authenticated but no profile - this shouldn't happen with our new system
-        console.log('User authenticated but no profile found');
+        // User is authenticated but no profile - wait for profile to load
+        // Don't redirect yet
       } else {
-        // User is not authenticated - stay on current page or redirect to home
-        console.log('User not authenticated, checking redirect...');
-        
-        // Don't redirect if already on auth pages or home page
+        // User is not authenticated - only redirect if necessary
         const isOnAuthPage = pathname.includes('/auth');
         const isOnHomePage = pathname === '/';
         const isOnBlogPage = pathname === '/blog';
         
-        console.log('🔍 Unauthenticated user redirect check:', {
-          pathname,
-          isOnAuthPage,
-          isOnHomePage,
-          isOnBlogPage,
-          shouldRedirect: !isOnAuthPage && !isOnHomePage && !isOnBlogPage
-        });
-        
         if (!isOnAuthPage && !isOnHomePage && !isOnBlogPage) {
-          console.log('Redirecting to landing page (/)');
-          router.push('/');
-        } else {
-          console.log('✅ Unauthenticated user can stay on current page:', pathname);
+          const redirectPath = '/';
+          if (lastRedirect !== redirectPath) {
+            setLastRedirect(redirectPath);
+            router.push(redirectPath);
+          }
         }
       }
     }
-  }, [auth.user, auth.userProfile, auth.loading, router, pathname]);
+  }, [auth.user, auth.userProfile, auth.loading, router, pathname, lastRedirect]);
 
   const value = {
     user: auth.user,

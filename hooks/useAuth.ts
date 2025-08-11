@@ -27,52 +27,76 @@ export function useAuth() {
     loading: true
   })
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [profileCache, setProfileCache] = useState<Map<string, UserProfile>>(new Map())
 
-  useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setAuthState({
-        user: session?.user ?? null,
-        session,
-        loading: false
-      })
-
-      // Load user profile if authenticated
-      if (session?.user) {
-        console.log('Loading profile for user:', session.user.email)
-        const { data: profile, error } = await getUserProfile(session.user.id)
-        if (profile) {
-          // Update profile with current user data if email is empty
-          if (!profile.email && session.user.email) {
-            await updateProfileWithUserData(profile.id, session.user)
-            const { data: updatedProfile } = await getUserProfile(session.user.id)
-            if (updatedProfile) {
-              setUserProfile(updatedProfile)
-              console.log('Profile updated with user data:', updatedProfile)
-            }
-          } else {
-            setUserProfile(profile)
-            console.log('Profile loaded:', profile)
-          }
-        } else {
-          console.log('No profile found, creating default profile')
-          // Create a default profile if none exists
-          const { data: newProfile } = await createDefaultProfile(session.user)
-          if (newProfile) {
-            setUserProfile(newProfile)
-            console.log('Default profile created:', newProfile)
-          }
+  // Optimized profile loading with caching
+  const loadUserProfile = async (userId: string, forceRefresh = false) => {
+    try {
+      // Check cache first (unless forcing refresh)
+      if (!forceRefresh && profileCache.has(userId)) {
+        const cachedProfile = profileCache.get(userId)
+        if (cachedProfile) {
+          setUserProfile(cachedProfile)
+          return { data: cachedProfile, error: null }
         }
       }
+
+      const { data: profile, error } = await getUserProfile(userId)
+      if (profile) {
+        // Cache the profile
+        setProfileCache(prev => new Map(prev).set(userId, profile))
+        setUserProfile(profile)
+        return { data: profile, error: null }
+      }
+      return { data: null, error }
+    } catch (error) {
+      console.error('Error loading user profile:', error)
+      return { data: null, error }
     }
+  }
 
-    getInitialSession()
+  // Optimized profile creation/update
+  const ensureUserProfile = async (user: User) => {
+    try {
+      // Try to get existing profile first
+      const { data: existingProfile } = await getUserProfile(user.id)
+      
+      if (existingProfile) {
+        // Profile exists, update if needed
+        const needsUpdate = !existingProfile.email && user.email
+        if (needsUpdate) {
+          await updateProfileWithUserData(existingProfile.id, user)
+          const { data: updatedProfile } = await getUserProfile(user.id)
+          if (updatedProfile) {
+            setUserProfile(updatedProfile)
+            setProfileCache(prev => new Map(prev).set(user.id, updatedProfile))
+            return updatedProfile
+          }
+        }
+        setUserProfile(existingProfile)
+        setProfileCache(prev => new Map(prev).set(user.id, existingProfile))
+        return existingProfile
+      } else {
+        // Create new profile
+        const { data: newProfile } = await createDefaultProfile(user)
+        if (newProfile) {
+          setUserProfile(newProfile)
+          setProfileCache(prev => new Map(prev).set(user.id, newProfile))
+          return newProfile
+        }
+      }
+      return null
+    } catch (error) {
+      console.error('Error ensuring user profile:', error)
+      return null
+    }
+  }
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.email)
+  useEffect(() => {
+    // Get initial session with optimized loading
+    const getInitialSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
         
         setAuthState({
           user: session?.user ?? null,
@@ -80,71 +104,39 @@ export function useAuth() {
           loading: false
         })
 
-        // Handle different auth events
-        if (event === 'SIGNED_IN' && session?.user) {
-          console.log('User signed in:', session.user.email)
-          const { data: profile, error } = await getUserProfile(session.user.id)
-          if (profile) {
-            // Update profile with current user data if email is empty
-            if (!profile.email && session.user.email) {
-              await updateProfileWithUserData(profile.id, session.user)
-              const { data: updatedProfile } = await getUserProfile(session.user.id)
-              if (updatedProfile) {
-                setUserProfile(updatedProfile)
-                console.log('Profile updated with user data on sign in:', updatedProfile)
-              }
-            } else {
-              setUserProfile(profile)
-              console.log('Profile loaded on sign in:', profile)
-            }
-          } else {
-            console.log('No profile found on sign in, creating default')
-            const { data: newProfile } = await createDefaultProfile(session.user)
-            if (newProfile) {
-              setUserProfile(newProfile)
-              console.log('Default profile created on sign in:', newProfile)
-            }
-          }
-        } else if (event === 'SIGNED_OUT') {
-          console.log('User signed out')
-          setUserProfile(null)
-        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-          console.log('Token refreshed for:', session.user.email)
-          const { data: profile } = await getUserProfile(session.user.id)
-          if (profile) {
-            setUserProfile(profile)
-          }
-        } else if (event === 'USER_UPDATED' && session?.user) {
-          console.log('User updated:', session.user.email)
-          const { data: profile } = await getUserProfile(session.user.id)
-          if (profile) {
-            setUserProfile(profile)
-          }
-        }
-
-        // Load user profile on auth change
+        // Load user profile if authenticated (parallel operation)
         if (session?.user) {
-          const { data: profile, error } = await getUserProfile(session.user.id)
-          if (profile) {
-            // Update profile with current user data if email is empty
-            if (!profile.email && session.user.email) {
-              await updateProfileWithUserData(profile.id, session.user)
-              const { data: updatedProfile } = await getUserProfile(session.user.id)
-              if (updatedProfile) {
-                setUserProfile(updatedProfile)
-              }
-            } else {
-              setUserProfile(profile)
-            }
-          } else {
-            // Create default profile if none exists
-            const { data: newProfile } = await createDefaultProfile(session.user)
-            if (newProfile) {
-              setUserProfile(newProfile)
-            }
-          }
-        } else {
+          ensureUserProfile(session.user)
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error)
+        setAuthState(prev => ({ ...prev, loading: false }))
+      }
+    }
+
+    getInitialSession()
+
+    // Optimized auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setAuthState({
+          user: session?.user ?? null,
+          session,
+          loading: false
+        })
+
+        // Handle auth events efficiently
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Load profile in background without blocking UI
+          ensureUserProfile(session.user)
+        } else if (event === 'SIGNED_OUT') {
           setUserProfile(null)
+          setProfileCache(new Map())
+        } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+          // Only refresh profile if not cached
+          if (!profileCache.has(session.user.id)) {
+            ensureUserProfile(session.user)
+          }
         }
       }
     )
@@ -219,14 +211,29 @@ export function useAuth() {
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Set loading state immediately for better UX
+      setAuthState(prev => ({ ...prev, loading: true }))
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       })
       
-      if (error) throw error
+      if (error) {
+        setAuthState(prev => ({ ...prev, loading: false }))
+        throw error
+      }
+      
+      // Don't wait for profile loading - let it happen in background
+      // This makes the login feel much faster
+      if (data.user) {
+        // Profile will be loaded by the auth state change listener
+        setAuthState(prev => ({ ...prev, loading: false }))
+      }
+      
       return { data, error: null }
     } catch (error) {
+      setAuthState(prev => ({ ...prev, loading: false }))
       return { data: null, error }
     }
   }
