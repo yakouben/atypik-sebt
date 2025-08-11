@@ -545,10 +545,10 @@ export default function GlampingDashboard() {
         {/* Tab Navigation */}
         <div className="bg-white border-b border-gray-200 rounded-t-2xl mb-6 sm:mb-8">
           <div className="max-w-7xl mx-auto px-0.5 sm:px-1 md:px-2 lg:px-4 xl:px-8">
-            <div className="flex space-x-0 sm:space-x-0.5 md:space-x-1 lg:space-x-2 xl:space-x-4 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="grid grid-cols-3 sm:flex sm:space-x-0 sm:space-x-0.5 md:space-x-1 lg:space-x-2 xl:space-x-4 overflow-x-auto pb-2 scrollbar-hide">
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className={`py-2 sm:py-2.5 md:py-3 lg:py-4 px-1 sm:px-1 md:px-1.5 lg:px-2 xl:px-3 border-b-2 font-medium text-xs sm:text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
+                className={`w-full sm:w-auto py-3 sm:py-2.5 md:py-3 lg:py-4 px-2 sm:px-1 md:px-1.5 lg:px-2 xl:px-3 border-b-2 font-medium text-xs sm:text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 flex items-center justify-center sm:justify-start ${
                   activeTab === 'dashboard'
                     ? 'border-[#4A7C59] text-[#4A7C59]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -565,7 +565,7 @@ export default function GlampingDashboard() {
               </button>
               <button
                 onClick={() => setActiveTab('properties')}
-                className={`py-2 sm:py-2.5 md:py-3 lg:py-4 px-1 sm:px-1 md:px-1.5 lg:px-2 xl:px-3 border-b-2 font-medium text-xs sm:text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
+                className={`w-full sm:w-auto py-3 sm:py-2.5 md:py-3 lg:py-4 px-2 sm:px-1 md:px-1.5 lg:px-2 xl:px-3 border-b-2 font-medium text-xs sm:text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 flex items-center justify-center sm:justify-start ${
                   activeTab === 'properties'
                     ? 'border-[#4A7C59] text-[#4A7C59]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -582,7 +582,7 @@ export default function GlampingDashboard() {
               </button>
               <button
                 onClick={() => setActiveTab('bookings')}
-                className={`py-2 sm:py-2.5 md:py-3 lg:py-4 px-1 sm:px-1 md:px-1.5 lg:px-2 xl:px-3 border-b-2 font-medium text-xs sm:text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 ${
+                className={`w-full sm:w-auto py-3 sm:py-2.5 md:py-3 lg:py-4 px-2 sm:px-1 md:px-1.5 lg:px-2 xl:px-3 border-b-2 font-medium text-xs sm:text-xs md:text-sm transition-colors whitespace-nowrap flex-shrink-0 flex items-center justify-center sm:justify-start ${
                   activeTab === 'bookings'
                     ? 'border-[#4A7C59] text-[#4A7C59]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
