@@ -243,7 +243,7 @@ export default function ClientDashboard() {
               </div>
               <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
                 <User className="w-5 h-5" />
-                <span>Profil</span>
+                <span className="hidden sm:inline">Profil</span>
               </button>
             </div>
           </div>
@@ -254,7 +254,7 @@ export default function ClientDashboard() {
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-8">
+            <div className="flex items-center space-x-4 sm:space-x-8">
               <button
                 onClick={() => setActiveTab('dashboard')}
                 className={`flex items-center space-x-2 transition-colors ${
@@ -264,7 +264,7 @@ export default function ClientDashboard() {
                 }`}
               >
                 <LayoutDashboard className="w-5 h-5" />
-                <span>Tableau de bord</span>
+                <span className="hidden sm:inline">Tableau de bord</span>
               </button>
               <button
                 onClick={() => setActiveTab('properties')}
@@ -275,7 +275,7 @@ export default function ClientDashboard() {
                 }`}
               >
                 <Home className="w-5 h-5" />
-                <span>Parcourir</span>
+                <span className="hidden sm:inline">Parcourir</span>
               </button>
               <button
                 onClick={() => setActiveTab('bookings')}
@@ -286,7 +286,7 @@ export default function ClientDashboard() {
                 }`}
               >
                 <Calendar className="w-5 h-5" />
-                <span>Mes réservations</span>
+                <span className="hidden sm:inline">Mes réservations</span>
               </button>
               <button
                 onClick={() => setActiveTab('profile')}
@@ -297,16 +297,16 @@ export default function ClientDashboard() {
                 }`}
               >
                 <User className="w-5 h-5" />
-                <span>Profil</span>
+                <span className="hidden sm:inline">Profil</span>
               </button>
             </div>
             <div className="flex items-center space-x-4">
               <button 
                 onClick={handleSignOut}
-                className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-sm border border-red-200"
+                className="flex items-center justify-center w-10 h-10 sm:w-auto sm:h-auto sm:px-4 sm:py-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-full sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-sm border border-red-200"
               >
                 <LogOut className="w-5 h-5" />
-                <span>Déconnexion</span>
+                <span className="hidden sm:inline ml-2">Déconnexion</span>
               </button>
             </div>
           </div>
