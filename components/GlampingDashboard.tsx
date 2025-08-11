@@ -78,6 +78,12 @@ interface Reservation {
   email_or_phone: string;
   travel_type: string;
   created_at: string;
+  // Stored property details for persistence
+  property_name?: string;
+  property_location?: string;
+  property_price_per_night?: number;
+  property_max_guests?: number;
+  property_images?: string[];
   property?: {
     id: string;
     name: string;
@@ -182,8 +188,13 @@ export default function GlampingDashboard() {
     if (bookingSearchQuery) {
       const query = bookingSearchQuery.toLowerCase();
       filtered = filtered.filter(booking => 
-        booking.property?.name.toLowerCase().includes(query) ||
-        booking.property?.location.toLowerCase().includes(query) ||
+        // Search in live property data
+        (booking.property?.name && booking.property.name.toLowerCase().includes(query)) ||
+        (booking.property?.location && booking.property.location.toLowerCase().includes(query)) ||
+        // Search in stored property data (for deleted properties)
+        (booking.property_name && booking.property_name.toLowerCase().includes(query)) ||
+        (booking.property_location && booking.property_location.toLowerCase().includes(query)) ||
+        // Search in client information
         booking.full_name.toLowerCase().includes(query) ||
         booking.email_or_phone.toLowerCase().includes(query)
       );
@@ -1040,6 +1051,24 @@ export default function GlampingDashboard() {
               </div>
             </div>
 
+            {/* Info Message about Deleted Properties */}
+            {bookings.some(booking => !booking.property) && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                <div className="flex items-start space-x-3">
+                  <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-blue-800 mb-1">
+                      Réservations avec propriétés supprimées
+                    </h3>
+                    <p className="text-sm text-blue-700">
+                      Certaines réservations concernent des propriétés qui ont été supprimées. 
+                      Les nouvelles réservations conservent automatiquement les informations de propriété.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Enhanced Filters and Search */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
@@ -1104,12 +1133,35 @@ export default function GlampingDashboard() {
                           <div className="flex items-start justify-between">
                             <div>
                               <h4 className="text-xl font-bold text-gray-900 mb-1">
-                                {booking.property?.name || 'Propriété supprimée'}
+                                {booking.property ? (
+                                  <div className="flex items-center gap-2">
+                                    {booking.property.name}
+                                    {booking.property.id === 'stored' && (
+                                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                                        Données sauvegardées
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-red-600 flex items-center gap-2">
+                                    <AlertCircle className="w-5 h-5" />
+                                    Propriété supprimée
+                                  </span>
+                                )}
                               </h4>
                               <p className="text-gray-600 flex items-center gap-2">
                                 <MapPin className="w-4 h-4" />
-                                {booking.property?.location || 'Localisation inconnue'}
+                                {booking.property ? (
+                                  booking.property.location
+                                ) : (
+                                  <span className="text-gray-500">Localisation inconnue</span>
+                                )}
                               </p>
+                              {!booking.property && (
+                                <p className="text-sm text-gray-500 mt-1">
+                                  Cette propriété a été supprimée mais la réservation est conservée
+                                </p>
+                              )}
                             </div>
                             <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusColor(booking.status)}`}>
                               {getStatusIcon(booking.status)}
@@ -1120,13 +1172,24 @@ export default function GlampingDashboard() {
                           </div>
 
                           {/* Property Image */}
-                          {booking.property?.images && booking.property.images.length > 0 && (
+                          {booking.property?.images && booking.property.images.length > 0 ? (
                             <div className="w-full h-32 rounded-lg overflow-hidden">
                               <img
                                 src={booking.property.images[0]}
                                 alt={booking.property.name}
                                 className="w-full h-full object-cover"
                               />
+                            </div>
+                          ) : (
+                            <div className="w-full h-32 rounded-lg bg-gray-100 flex items-center justify-center">
+                              {booking.property ? (
+                                <Camera className="w-8 h-8 text-gray-400" />
+                              ) : (
+                                <div className="text-center text-gray-500">
+                                  <AlertCircle className="w-8 h-8 mx-auto mb-2" />
+                                  <p className="text-sm">Propriété supprimée</p>
+                                </div>
+                              )}
                             </div>
                           )}
 

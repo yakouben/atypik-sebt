@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     // Step 5: Check if property exists and is available
     const { data: property, error: propertyError } = await supabase
       .from('properties')
-      .select('id, name, max_guests, price_per_night, is_available')
+      .select('id, name, max_guests, price_per_night, is_available, location, images')
       .eq('id', property_id)
       .single();
 
@@ -176,7 +176,13 @@ export async function POST(request: NextRequest) {
       status: 'pending',
       full_name: full_name || user.user_metadata?.full_name || 'Guest',
       email_or_phone: email_or_phone || user.email || 'Not provided',
-      travel_type: travel_type || 'family'
+      travel_type: travel_type || 'family',
+      // Store property details for persistence even if property gets deleted
+      property_name: property.name,
+      property_location: property.location,
+      property_price_per_night: property.price_per_night,
+      property_max_guests: property.max_guests,
+      property_images: property.images || []
     };
 
     console.log('📊 Prepared booking data:', newBooking);

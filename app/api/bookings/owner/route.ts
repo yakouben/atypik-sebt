@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       .from('bookings')
       .select(`
         *,
-        properties!inner (
+        properties (
           id,
           name,
           location,
@@ -59,13 +59,36 @@ export async function GET(request: NextRequest) {
     console.log('🔍 Raw bookings data:', bookings);
 
     // Transform the data to match the expected format
-    const transformedBookings = bookings?.map(booking => {
+    const transformedBookings = await Promise.all(bookings?.map(async (booking) => {
       console.log('🔍 Processing booking:', booking);
       console.log('🔍 Property data:', booking.properties);
       
       // Handle missing property data
       const propertyData = booking.properties || {};
       const clientData = booking.profiles || {};
+      
+      // Prioritize stored property data from booking record over joined data
+      // This ensures property info is available even if property gets deleted
+      const hasValidProperty = propertyData && propertyData.id && propertyData.name;
+      const hasStoredPropertyData = booking.property_name && booking.property_location;
+      
+      // If no property data available, try to fetch it directly from properties table
+      let fallbackPropertyData = null;
+      if (!hasValidProperty && !hasStoredPropertyData && booking.property_id) {
+        try {
+          const { data: fallbackProperty } = await supabase
+            .from('properties')
+            .select('id, name, location, images, price_per_night')
+            .eq('id', booking.property_id)
+            .single();
+          
+          if (fallbackProperty) {
+            fallbackPropertyData = fallbackProperty;
+          }
+        } catch (error) {
+          console.log('🔍 Could not fetch fallback property data for booking:', booking.id);
+        }
+      }
       
       return {
         id: booking.id,
@@ -80,20 +103,32 @@ export async function GET(request: NextRequest) {
         travel_type: booking.travel_type,
         created_at: booking.created_at,
         updated_at: booking.updated_at,
-        property: {
-          id: propertyData.id || 'unknown',
-          name: propertyData.name || 'Propriété inconnue',
+        property: hasValidProperty ? {
+          id: propertyData.id,
+          name: propertyData.name,
           location: propertyData.location || 'Localisation inconnue',
           images: propertyData.images || [],
           price_per_night: propertyData.price_per_night || 0
-        },
+        } : hasStoredPropertyData ? {
+          id: 'stored',
+          name: booking.property_name,
+          location: booking.property_location,
+          images: booking.property_images || [],
+          price_per_night: booking.property_price_per_night || 0
+        } : fallbackPropertyData ? {
+          id: fallbackPropertyData.id,
+          name: fallbackPropertyData.name,
+          location: fallbackPropertyData.location || 'Localisation inconnue',
+          images: fallbackPropertyData.images || [],
+          price_per_night: fallbackPropertyData.price_per_night || 0
+        } : null,
         client: {
           id: clientData.id || 'unknown',
           full_name: clientData.full_name || 'Client inconnu',
           email: clientData.email || 'Email inconnu'
         }
       };
-    }) || [];
+    }) || []);
 
     console.log('🔍 Transformed bookings:', transformedBookings);
 
