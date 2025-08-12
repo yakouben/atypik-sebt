@@ -36,7 +36,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch bookings for the client with stored property data
+    // Simple query: fetch ONLY the stored form data from bookings table
+    // No joins, no complex fallbacks - just what the client submitted
     const { data: bookings, error: bookingsError } = await supabase
       .from('bookings')
       .select(`
@@ -52,19 +53,12 @@ export async function GET(request: NextRequest) {
         travel_type,
         created_at,
         updated_at,
-        // Stored property data (from the form)
+        // Property data stored from the form
         property_name,
         property_location,
         property_price_per_night,
         property_max_guests,
-        property_images,
-        // Fallback: try to get live property data if available
-        properties (
-          id,
-          name,
-          location,
-          images
-        )
+        property_images
       `)
       .eq('client_id', clientId)
       .order('created_at', { ascending: false });
@@ -77,46 +71,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Transform the data to combine stored property data with client data
+    // Transform the data to match the expected format
+    // All data comes directly from what the client submitted in the form
     const transformedBookings = (bookings || []).map(booking => {
-      // Prioritize stored property data (from the form) over joined data
-      const hasStoredPropertyData = booking.property_name && booking.property_location;
-      const hasLivePropertyData = booking.properties && booking.properties.id;
-      
-      let finalPropertyData;
-      
-      if (hasStoredPropertyData) {
-        // Use stored property data (most reliable)
-        finalPropertyData = {
-          id: 'stored',
-          name: booking.property_name,
-          location: booking.property_location,
-          images: booking.property_images || [],
-          price_per_night: booking.property_price_per_night || 0,
-          max_guests: booking.property_max_guests || 0
-        };
-      } else if (hasLivePropertyData) {
-        // Fallback to live property data
-        finalPropertyData = {
-          id: booking.properties.id,
-          name: booking.properties.name,
-          location: booking.properties.location,
-          images: booking.properties.images || [],
-          price_per_night: 0, // Not available in joined data
-          max_guests: 0 // Not available in joined data
-        };
-      } else {
-        // No property data available
-        finalPropertyData = {
-          id: 'unknown',
-          name: 'Propriété inconnue',
-          location: 'Localisation inconnue',
-          images: [],
-          price_per_night: 0,
-          max_guests: 0
-        };
-      }
-
       return {
         id: booking.id,
         check_in_date: booking.check_in_date,
@@ -130,8 +87,13 @@ export async function GET(request: NextRequest) {
         travel_type: booking.travel_type,
         created_at: booking.created_at,
         updated_at: booking.updated_at,
-        // Combined property data
-        properties: finalPropertyData
+        // Property data from the form (stored when client submitted)
+        properties: {
+          id: 'stored',
+          name: booking.property_name || 'Nom non spécifié',
+          location: booking.property_location || 'Localisation non spécifiée',
+          images: booking.property_images || []
+        }
       };
     });
 

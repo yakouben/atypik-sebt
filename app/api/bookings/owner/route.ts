@@ -17,33 +17,33 @@ export async function GET(request: NextRequest) {
 
     console.log('🔍 Fetching bookings for owner:', ownerId);
 
-    // Build the query based on parameters
+    // Simple query: fetch ONLY the stored form data from bookings table
+    // No joins, no complex fallbacks - just what the client submitted
     let query = supabase
       .from('bookings')
       .select(`
-        *,
-        // Stored property data (from the form - most reliable)
+        id,
+        check_in_date,
+        check_out_date,
+        total_price,
+        status,
+        guest_count,
+        special_requests,
+        full_name,
+        email_or_phone,
+        travel_type,
+        created_at,
+        updated_at,
+        // Property data stored from the form
         property_name,
         property_location,
         property_price_per_night,
         property_max_guests,
         property_images,
-        // Fallback: try to get live property data if available
-        properties (
-          id,
-          name,
-          location,
-          images,
-          price_per_night,
-          owner_id
-        ),
-        profiles:client_id (
-          id,
-          full_name,
-          email
-        )
+        // Client data stored from the form
+        client_id
       `)
-      .eq('properties.owner_id', ownerId);
+      .eq('client_id', ownerId); // This should be the property owner ID
 
     // Filter by status if provided
     if (status && status !== 'all') {
@@ -63,105 +63,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('🔍 Raw bookings data:', bookings);
+    console.log('🔍 Raw bookings data from form:', bookings);
 
     // Transform the data to match the expected format
-    const transformedBookings = await Promise.all(bookings?.map(async (booking) => {
-      console.log('🔍 Processing booking:', booking.id);
-      console.log('🔍 Raw booking data:', {
-        property_name: booking.property_name,
-        property_location: booking.property_location,
-        property_price_per_night: booking.property_price_per_night,
-        property_max_guests: booking.property_max_guests,
-        property_images: booking.property_images
-      });
-      console.log('🔍 Joined property data:', booking.properties);
-      
-      // Handle missing property data
-      const propertyData = booking.properties || {};
-      const clientData = booking.profiles || {};
-      
-      // PRIORITY 1: Stored property data from the form (most reliable)
-      // This is the data that was sent when the client created the booking
-      const hasStoredPropertyData = booking.property_name && booking.property_location;
-      
-      // PRIORITY 2: Live property data from properties table (if property still exists)
-      const hasValidProperty = propertyData && propertyData.id && propertyData.name;
-      
-      // PRIORITY 3: Fallback fetch from properties table (if neither above available)
-      let fallbackPropertyData = null;
-      if (!hasValidProperty && !hasStoredPropertyData && booking.property_id) {
-        try {
-          const { data: fallbackProperty } = await supabase
-            .from('properties')
-            .select('id, name, location, images, price_per_night')
-            .eq('id', booking.property_id)
-            .single();
-          
-          if (fallbackProperty) {
-            fallbackPropertyData = fallbackProperty;
-            console.log('🔍 Using fallback property data:', fallbackProperty);
-          }
-        } catch (error) {
-          console.log('🔍 Could not fetch fallback property data for booking:', booking.id);
-        }
-      }
-      
-      // Determine final property data based on priority
-      let finalProperty;
-      
-      if (hasStoredPropertyData) {
-        // PRIORITY 1: Use stored data from the form
-        finalProperty = {
-          id: 'stored',
-          name: booking.property_name,
-          location: booking.property_location,
-          images: booking.property_images || [],
-          price_per_night: booking.property_price_per_night || 0,
-          max_guests: booking.property_max_guests || 0,
-          source: 'stored_from_form'
-        };
-        console.log('🔍 Using STORED property data from form');
-      } else if (hasValidProperty) {
-        // PRIORITY 2: Use live property data
-        finalProperty = {
-          id: propertyData.id,
-          name: propertyData.name,
-          location: propertyData.location || 'Localisation inconnue',
-          images: propertyData.images || [],
-          price_per_night: propertyData.price_per_night || 0,
-          max_guests: 0, // Not available in joined data
-          source: 'live_property'
-        };
-        console.log('🔍 Using LIVE property data');
-      } else if (fallbackPropertyData) {
-        // PRIORITY 3: Use fallback fetched data
-        finalProperty = {
-          id: fallbackPropertyData.id,
-          name: fallbackPropertyData.name,
-          location: fallbackPropertyData.location || 'Localisation inconnue',
-          images: fallbackPropertyData.images || [],
-          price_per_night: fallbackPropertyData.price_per_night || 0,
-          max_guests: 0, // Not available in fallback data
-          source: 'fallback_fetch'
-        };
-        console.log('🔍 Using FALLBACK property data');
-      } else {
-        // No property data available
-        finalProperty = {
-          id: 'unknown',
-          name: 'Propriété supprimée',
-          location: 'Localisation inconnue',
-          images: [],
-          price_per_night: 0,
-          max_guests: 0,
-          source: 'no_data'
-        };
-        console.log('🔍 No property data available');
-      }
-      
-      console.log('🔍 Final property data for dashboard:', finalProperty);
-      
+    // All data comes directly from what the client submitted in the form
+    const transformedBookings = (bookings || []).map(booking => {
       return {
         id: booking.id,
         check_in_date: booking.check_in_date,
@@ -170,21 +76,31 @@ export async function GET(request: NextRequest) {
         status: booking.status,
         guest_count: booking.guest_count,
         special_requests: booking.special_requests,
+        // Client data from the form
         full_name: booking.full_name,
         email_or_phone: booking.email_or_phone,
         travel_type: booking.travel_type,
         created_at: booking.created_at,
         updated_at: booking.updated_at,
-        property: finalProperty,
+        // Property data from the form (stored when client submitted)
+        property: {
+          id: 'stored',
+          name: booking.property_name || 'Nom non spécifié',
+          location: booking.property_location || 'Localisation non spécifiée',
+          images: booking.property_images || [],
+          price_per_night: booking.property_price_per_night || 0,
+          max_guests: booking.property_max_guests || 0
+        },
+        // Client info from the form
         client: {
-          id: clientData.id || 'unknown',
-          full_name: clientData.full_name || 'Client inconnu',
-          email: clientData.email || 'Email inconnu'
+          id: booking.client_id || 'unknown',
+          full_name: booking.full_name || 'Client inconnu',
+          email: booking.email_or_phone || 'Contact inconnu'
         }
       };
-    }) || []);
+    });
 
-    console.log('🔍 Transformed bookings:', transformedBookings);
+    console.log('🔍 Transformed bookings (form data only):', transformedBookings);
 
     return NextResponse.json({ 
       data: transformedBookings,
@@ -227,32 +143,7 @@ export async function PATCH(request: NextRequest) {
 
     console.log('🔍 Updating booking:', bookingId, 'to status:', status);
 
-    // First, let's check if the booking exists and we can access it
-    const { data: existingBooking, error: checkError } = await supabase
-      .from('bookings')
-      .select('id, status, property_id')
-      .eq('id', bookingId)
-      .single();
-
-    if (checkError) {
-      console.error('❌ Error checking booking:', checkError);
-      return NextResponse.json(
-        { error: 'Booking not found or access denied: ' + checkError.message },
-        { status: 404 }
-      );
-    }
-
-    if (!existingBooking) {
-      console.error('❌ Booking not found:', bookingId);
-      return NextResponse.json(
-        { error: 'Booking not found' },
-        { status: 404 }
-      );
-    }
-
-    console.log('✅ Booking found:', existingBooking);
-
-    // Now try to update the booking
+    // Update the booking status
     const { data: updatedBooking, error: updateError } = await supabase
       .from('bookings')
       .update({ 
