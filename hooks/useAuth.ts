@@ -96,16 +96,16 @@ export function useAuth() {
     // Get initial session with optimized loading
     const getInitialSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await supabase.auth.getSession()
         
-        setAuthState({
-          user: session?.user ?? null,
-          session,
-          loading: false
-        })
+      setAuthState({
+        user: session?.user ?? null,
+        session,
+        loading: false
+      })
 
         // Load user profile if authenticated (parallel operation)
-        if (session?.user) {
+      if (session?.user) {
           ensureUserProfile(session.user)
         }
       } catch (error) {

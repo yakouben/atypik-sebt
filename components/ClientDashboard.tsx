@@ -234,16 +234,16 @@ export default function ClientDashboard() {
       <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4">
               <div className="w-10 h-10 bg-gradient-to-br from-[#2C3E37] to-[#4A7C59] rounded-xl flex items-center justify-center">
                 <Home className="w-6 h-6 text-white" />
-              </div>
-              <div>
+            </div>
+            <div>
                 <h1 className="text-xl font-bold text-[#2C3E37]">
                   Dashboard
-                </h1>
-              </div>
+              </h1>
             </div>
+          </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <button 
                 onClick={handleSignOut}
@@ -251,7 +251,7 @@ export default function ClientDashboard() {
               >
                 <LogOut className="w-4 h-4" />
                 <span>Déconnexion</span>
-              </button>
+            </button>
             </div>
           </div>
         </div>
@@ -283,10 +283,10 @@ export default function ClientDashboard() {
               <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-3 sm:flex sm:justify-start">
                   {/* Dashboard Tab */}
-                  <button
-                    onClick={() => setActiveTab('dashboard')}
+          <button
+            onClick={() => setActiveTab('dashboard')}
                     className={`relative group transition-all duration-300 ease-in-out ${
-                      activeTab === 'dashboard'
+              activeTab === 'dashboard' 
                         ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
                         : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                     }`}
@@ -311,11 +311,11 @@ export default function ClientDashboard() {
                           : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
                       }`} />
                     </div>
-                  </button>
+          </button>
 
                   {/* Properties Tab */}
-                  <button
-                    onClick={() => setActiveTab('properties')}
+          <button
+            onClick={() => setActiveTab('properties')}
                     className={`relative group transition-all duration-300 ease-in-out ${
                       activeTab === ('properties' as TabType)
                         ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
@@ -342,17 +342,17 @@ export default function ClientDashboard() {
                           : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
                       }`} />
                     </div>
-                  </button>
+          </button>
 
                   {/* Bookings Tab */}
-                  <button
-                    onClick={() => setActiveTab('bookings')}
+          <button
+            onClick={() => setActiveTab('bookings')}
                     className={`relative group transition-all duration-300 ease-in-out ${
                       activeTab === ('bookings' as TabType)
                         ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
                         : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                    }`}
-                  >
+            }`}
+          >
                     <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
                       <div className="relative">
                         <Calendar className={`w-5 h-5 sm:w-6 sm:w-6 transition-all duration-300 ${
@@ -361,8 +361,8 @@ export default function ClientDashboard() {
                         {/* Badge for booking count */}
                         <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
                           <span className="text-xs font-bold text-white">{bookings.length}</span>
-                        </div>
-                      </div>
+          </div>
+          </div>
                       <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
                         activeTab === ('bookings' as TabType) ? 'font-semibold' : 'font-medium'
                       }`}>
@@ -377,7 +377,7 @@ export default function ClientDashboard() {
                           : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
                       }`} />
                     </div>
-                  </button>
+              </button>
                 </div>
               </div>
             </div>

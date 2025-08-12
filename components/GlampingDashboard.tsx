@@ -635,9 +635,9 @@ export default function GlampingDashboard() {
                     }`} />
                     
                     {/* Notification Badge */}
-                    {bookings.length > 0 && (
+                  {bookings.length > 0 && (
                       <div className="absolute -top-1 -right-1 bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center shadow-lg border-2 border-white transform scale-100 group-hover:scale-110 transition-transform duration-200">
-                        {bookings.length}
+                      {bookings.length}
                       </div>
                     )}
                   </div>
