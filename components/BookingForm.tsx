@@ -317,9 +317,9 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
         <div className="relative bg-gradient-to-br from-[#2d5016] to-[#1a3a0f] rounded-t-3xl p-6 text-white overflow-hidden">
           {/* Modern background pattern */}
           <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-white/20 rounded-full -translate-y-20 translate-x-20 blur-sm"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-16 -translate-x-16 blur-sm"></div>
-            <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white/5 rounded-full -translate-x-12 -translate-y-12 blur-sm"></div>
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/20 rounded-full -translate-y-20 translate-x-20"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-16 -translate-x-16"></div>
+            <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white/5 rounded-full -translate-x-12 -translate-y-12"></div>
           </div>
           
           <div className="relative flex items-center justify-between">
@@ -329,15 +329,15 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
               </h2>
               <div className="flex items-center space-x-3">
                 <div className="w-20 h-0.5 bg-gradient-to-r from-green-300 to-green-100 rounded-full"></div>
-                <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-green-300 rounded-full"></div>
                 <div className="w-12 h-0.5 bg-gradient-to-r from-green-100 to-transparent rounded-full"></div>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="group w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center hover:bg-white/30 transition-all duration-300 hover:scale-110 flex-shrink-0 border border-white/20 hover:border-white/40 hover:shadow-lg hover:shadow-white/20"
+              className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center hover:bg-white/30 transition-all duration-300 hover:scale-110 flex-shrink-0 border border-white/20 hover:border-white/40 hover:shadow-lg hover:shadow-white/20"
             >
-              <X className="w-6 h-6 text-white group-hover:rotate-90 transition-transform duration-300" />
+              <X className="w-6 h-6 text-white" />
             </button>
           </div>
           
