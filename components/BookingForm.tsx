@@ -314,21 +314,30 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-100 scrollbar-hide">
         {/* Enhanced Header */}
-        <div className="relative bg-gradient-to-br from-[#2d5016] to-[#1a3a0f] rounded-t-3xl p-6 text-white">
-          <div className="flex items-center justify-between">
+        <div className="relative bg-gradient-to-br from-[#2d5016] to-[#1a3a0f] rounded-t-3xl p-6 text-white overflow-hidden">
+          {/* Subtle background pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full -translate-y-16 translate-x-16"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+          </div>
+          
+          <div className="relative flex items-center justify-between">
             <div className="flex-1">
-              <h2 className="text-2xl font-bold mb-2">Book this property</h2>
+              <h2 className="text-3xl font-bold mb-1 bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
+                Book this property
+              </h2>
+              <div className="w-16 h-1 bg-gradient-to-r from-green-300 to-green-100 rounded-full"></div>
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 hover:scale-110 flex-shrink-0"
+              className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 hover:scale-110 flex-shrink-0 border border-white/20"
             >
-              <X className="w-5 h-5 text-white" />
+              <X className="w-6 h-6 text-white" />
             </button>
           </div>
           
-          {/* Decorative element */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+          {/* Enhanced decorative element */}
+          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-green-300 to-transparent"></div>
         </div>
 
         {/* Success Message */}
