@@ -78,16 +78,12 @@ interface Reservation {
   email_or_phone: string;
   travel_type: string;
   created_at: string;
-  // Stored property details for persistence
-  property_name?: string;
-  property_location?: string;
-  property_price_per_night?: number;
-  property_max_guests?: number;
-  property_images?: string[];
-  properties: {
+  property?: {
+    id: string;
     name: string;
     location: string;
     images: string[];
+    price_per_night: number;
   };
   client?: {
     id: string;
@@ -97,7 +93,7 @@ interface Reservation {
 }
 
 export default function GlampingDashboard() {
-  const { userProfile, getOwnerProperties, signOut } = useAuthContext();
+  const { userProfile, getOwnerProperties, getOwnerBookings, signOut } = useAuthContext();
   const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
   const [bookings, setBookings] = useState<Reservation[]>([]);
@@ -164,20 +160,8 @@ export default function GlampingDashboard() {
   const loadBookings = async () => {
     try {
       if (userProfile?.id) {
-        // Use direct API call instead of getOwnerBookings to get proper property data
-        const response = await fetch(`/api/bookings/owner?ownerId=${userProfile.id}`);
-        const bookingsData = await response.json();
-        console.log('🔍 Owner bookings API response:', bookingsData);
+        const bookingsData = await getOwnerBookings(userProfile.id);
         if (bookingsData.data) {
-          console.log('🔍 First booking data:', bookingsData.data[0]);
-          console.log('🔍 First booking properties:', bookingsData.data[0]?.properties);
-          console.log('🔍 All bookings properties check:', bookingsData.data.map(b => ({
-            id: b.id,
-            hasProperties: !!b.properties,
-            propertyName: b.properties?.name,
-            propertyLocation: b.properties?.location,
-            propertyImages: b.properties?.images
-          })));
           setBookings(bookingsData.data);
         }
       }
@@ -198,12 +182,12 @@ export default function GlampingDashboard() {
     if (bookingSearchQuery) {
       const query = bookingSearchQuery.toLowerCase();
       filtered = filtered.filter(booking => 
-        // Search in property data (both live and stored)
-        (booking.properties?.name && booking.properties.name.toLowerCase().includes(query)) ||
-        (booking.properties?.location && booking.properties.location.toLowerCase().includes(query)) ||
+        // Search in live property data
+        (booking.property?.name && booking.property.name.toLowerCase().includes(query)) ||
+        (booking.property?.location && booking.property.location.toLowerCase().includes(query)) ||
         // Search in client information
-        (booking.full_name && booking.full_name.toLowerCase().includes(query)) ||
-        (booking.email_or_phone && booking.email_or_phone.toLowerCase().includes(query))
+        booking.full_name.toLowerCase().includes(query) ||
+        booking.email_or_phone.toLowerCase().includes(query)
       );
     }
 
@@ -1059,7 +1043,7 @@ export default function GlampingDashboard() {
             </div>
 
             {/* Info Message about Deleted Properties */}
-            {bookings.some(booking => !booking.properties) && (
+            {bookings.some(booking => !booking.property) && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
                 <div className="flex items-start space-x-3">
                   <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -1132,15 +1116,7 @@ export default function GlampingDashboard() {
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
-                  {filteredBookings.map((booking) => {
-                    console.log('🔍 Rendering booking:', {
-                      id: booking.id,
-                      hasProperties: !!booking.properties,
-                      propertyName: booking.properties?.name,
-                      propertyLocation: booking.properties?.location,
-                      propertyImages: booking.properties?.images
-                    });
-                    return (
+                  {filteredBookings.map((booking) => (
                     <div key={booking.id} className="p-6 hover:bg-gray-50 transition-colors">
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Property Information */}
@@ -1148,12 +1124,14 @@ export default function GlampingDashboard() {
                           <div className="flex items-start justify-between">
                             <div>
                               <h4 className="text-xl font-bold text-gray-900 mb-1">
-                                {booking.properties ? (
+                                {booking.property ? (
                                   <div className="flex items-center gap-2">
-                                    {booking.properties.name}
-                                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                                      Données sauvegardées
-                                    </span>
+                                    {booking.property.name}
+                                    {booking.property.id === 'stored' && (
+                                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                                        Données sauvegardées
+                                      </span>
+                                    )}
                                   </div>
                                 ) : (
                                   <span className="text-red-600 flex items-center gap-2">
@@ -1164,13 +1142,13 @@ export default function GlampingDashboard() {
                               </h4>
                               <p className="text-gray-600 flex items-center gap-2">
                                 <MapPin className="w-4 h-4" />
-                                {booking.properties ? (
-                                  booking.properties.location
+                                {booking.property ? (
+                                  booking.property.location
                                 ) : (
                                   <span className="text-gray-500">Localisation inconnue</span>
                                 )}
                               </p>
-                              {!booking.properties && (
+                              {!booking.property && (
                                 <p className="text-sm text-gray-500 mt-1">
                                   Cette propriété a été supprimée mais la réservation est conservée
                                 </p>
@@ -1185,17 +1163,17 @@ export default function GlampingDashboard() {
                           </div>
 
                           {/* Property Image */}
-                          {booking.properties?.images && booking.properties.images.length > 0 ? (
+                          {booking.property?.images && booking.property.images.length > 0 ? (
                             <div className="w-full h-32 rounded-lg overflow-hidden">
                               <img
-                                src={booking.properties.images[0]}
-                                alt={booking.properties.name}
+                                src={booking.property.images[0]}
+                                alt={booking.property.name}
                                 className="w-full h-full object-cover"
                               />
                             </div>
                           ) : (
                             <div className="w-full h-32 rounded-lg bg-gray-100 flex items-center justify-center">
-                              {booking.properties ? (
+                              {booking.property ? (
                                 <Camera className="w-8 h-8 text-gray-400" />
                               ) : (
                                 <div className="text-center text-gray-500">
@@ -1350,8 +1328,7 @@ export default function GlampingDashboard() {
                         </div>
                       </div>
                     </div>
-                  );
-                })}
+                  ))}
                 </div>
               )}
             </div>

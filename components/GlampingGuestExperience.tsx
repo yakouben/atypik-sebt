@@ -326,8 +326,8 @@ export default function GlampingGuestExperience() {
                 <h1 className="text-xl font-bold text-[#2C3E37]">
                   Dashboard
                 </h1>
-              </div>
             </div>
+              </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <button 
                 onClick={handleSignOut}
@@ -343,7 +343,7 @@ export default function GlampingGuestExperience() {
 
       {/* Main Content Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Welcome Banner */}
+      {/* Welcome Banner */}
         <div className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-lg">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div className="mb-4 sm:mb-0">
@@ -352,13 +352,13 @@ export default function GlampingGuestExperience() {
               </h2>
               <p className="text-green-100 text-lg">
                 Découvrez des hébergements insolites et éco-responsables en France et en Europe
-              </p>
-            </div>
+            </p>
+          </div>
             <button className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-medium transition-all hover:bg-white/30 hover:scale-105 shadow-lg">
               Commencer à explorer
             </button>
-          </div>
         </div>
+      </div>
 
         {/* Modern Tab Navigation */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 sm:mb-8 overflow-hidden">
@@ -396,10 +396,10 @@ export default function GlampingGuestExperience() {
               </button>
 
               {/* Properties Tab */}
-              <button
-                onClick={() => setActiveTab('properties')}
+            <button
+              onClick={() => setActiveTab('properties')}
                 className={`relative group transition-all duration-300 ease-in-out ${
-                  activeTab === 'properties'
+                activeTab === 'properties'
                     ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
@@ -423,14 +423,14 @@ export default function GlampingGuestExperience() {
                       ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
                       : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
                   }`} />
-                </div>
-              </button>
+              </div>
+            </button>
 
               {/* Bookings Tab */}
-              <button
-                onClick={() => setActiveTab('bookings')}
+            <button
+              onClick={() => setActiveTab('bookings')}
                 className={`relative group transition-all duration-300 ease-in-out ${
-                  activeTab === 'bookings'
+                activeTab === 'bookings'
                     ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
@@ -458,13 +458,13 @@ export default function GlampingGuestExperience() {
                       ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
                       : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
                   }`} />
-                </div>
-              </button>
-            </div>
+              </div>
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Main Content */}
+      {/* Main Content */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
             {/* Enhanced Stats Cards */}

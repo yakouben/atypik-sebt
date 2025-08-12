@@ -176,13 +176,7 @@ export async function POST(request: NextRequest) {
       status: 'pending',
       full_name: full_name || user.user_metadata?.full_name || 'Guest',
       email_or_phone: email_or_phone || user.email || 'Not provided',
-      travel_type: travel_type || 'family',
-      // Store property details for persistence even if property gets deleted
-      property_name: property.name,
-      property_location: property.location,
-      property_price_per_night: property.price_per_night,
-      property_max_guests: property.max_guests,
-      property_images: property.images || []
+      travel_type: travel_type || 'family'
     };
 
     console.log('📊 Prepared booking data:', newBooking);
