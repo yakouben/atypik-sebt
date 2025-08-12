@@ -137,20 +137,24 @@ export default function GlampingGuestExperience() {
   };
 
   const loadBookings = async () => {
+    console.log('🔍 DEBUG: Client loadBookings function called');
     setBookingsLoading(true);
     try {
       const response = await fetch(`/api/bookings/client?clientId=${userProfile!.id}`);
       const result = await response.json();
       
+      console.log('🔍 DEBUG: Client API response received:', result);
+      
       if (response.ok && result.data) {
         setBookings(result.data);
-        // Remove console.log for better performance
+        console.log('🔍 DEBUG: Client bookings set successfully, count:', result.data.length);
+        console.log('🔍 DEBUG: First client booking sample:', result.data[0]);
       } else {
-        console.error('Error loading bookings:', result.error);
+        console.error('❌ DEBUG: Client API error response:', result.error);
         setBookings([]);
       }
     } catch (error) {
-      console.error('Error loading bookings:', error);
+      console.error('❌ DEBUG: Exception in client loadBookings:', error);
       setBookings([]);
     } finally {
       setBookingsLoading(false);

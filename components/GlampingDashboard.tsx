@@ -164,15 +164,24 @@ export default function GlampingDashboard() {
   };
 
   const loadBookings = async () => {
+    console.log('🔍 DEBUG: loadBookings function called');
     try {
-      if (userProfile?.id) {
-        const bookingsData = await getOwnerBookings(userProfile.id);
-        if (bookingsData.data) {
-          setBookings(bookingsData.data);
-        }
+      const response = await fetch(`/api/bookings/owner?ownerId=${userProfile?.id}&status=${selectedBookingStatus}&limit=50`);
+      const result = await response.json();
+      
+      console.log('🔍 DEBUG: Owner API response received:', result);
+      
+      if (response.ok && result.data) {
+        setBookings(result.data);
+        console.log('🔍 DEBUG: Bookings set successfully, count:', result.data.length);
+        console.log('🔍 DEBUG: First booking sample:', result.data[0]);
+      } else {
+        console.error('❌ DEBUG: API error response:', result.error);
+        setBookings([]);
       }
     } catch (error) {
-      console.error('Error loading bookings:', error);
+      console.error('❌ DEBUG: Exception in loadBookings:', error);
+      setBookings([]);
     }
   };
 
