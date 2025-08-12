@@ -312,13 +312,12 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-100 scrollbar-custom">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-100 scrollbar-hide">
         {/* Enhanced Header */}
         <div className="relative bg-gradient-to-br from-[#2d5016] to-[#1a3a0f] rounded-t-3xl p-6 text-white">
           <div className="flex items-center justify-between mb-4">
             <div className="flex-1">
               <h2 className="text-2xl font-bold mb-2">Book this property</h2>
-              <p className="text-green-100 text-lg font-semibold opacity-95">{property.name}</p>
             </div>
             <button
               onClick={onClose}
