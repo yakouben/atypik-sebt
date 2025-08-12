@@ -332,17 +332,17 @@ export default function GlampingGuestExperience() {
       </div>
 
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-lg">
+      <div className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] rounded-2xl p-6 sm:p-8 lg:p-10 text-white mb-8 shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div className="mb-4 sm:mb-0">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2">
+          <div className="mb-4 sm:mb-0 lg:mb-0">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 lg:mb-3">
               {getGreeting()}, {userProfile?.full_name?.split(' ')[0] || 'Client'}!
             </h2>
-            <p className="text-green-100 text-lg">
+            <p className="text-green-100 text-lg lg:text-xl">
               Découvrez des hébergements insolites et éco-responsables en France et en Europe
             </p>
           </div>
-          <button className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-medium transition-all hover:bg-white/30 hover:scale-105 shadow-lg">
+          <button className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 lg:px-8 lg:py-4 rounded-xl font-medium transition-all hover:bg-white/30 hover:scale-105 shadow-lg text-base lg:text-lg">
             Commencer à explorer
           </button>
         </div>
@@ -453,7 +453,7 @@ export default function GlampingGuestExperience() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
             {/* Enhanced Stats Cards */}
