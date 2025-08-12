@@ -315,29 +315,34 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-100 scrollbar-hide">
         {/* Enhanced Header */}
         <div className="relative bg-gradient-to-br from-[#2d5016] to-[#1a3a0f] rounded-t-3xl p-6 text-white overflow-hidden">
-          {/* Subtle background pattern */}
+          {/* Modern background pattern */}
           <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full -translate-y-16 translate-x-16"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/20 rounded-full -translate-y-20 translate-x-20 blur-sm"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-16 -translate-x-16 blur-sm"></div>
+            <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white/5 rounded-full -translate-x-12 -translate-y-12 blur-sm"></div>
           </div>
           
           <div className="relative flex items-center justify-between">
             <div className="flex-1">
-              <h2 className="text-3xl font-bold mb-1 bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
-                Book this property
+              <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-white via-green-100 to-green-200 bg-clip-text text-transparent">
+                Réserver cette propriété
               </h2>
-              <div className="w-16 h-1 bg-gradient-to-r from-green-300 to-green-100 rounded-full"></div>
+              <div className="flex items-center space-x-3">
+                <div className="w-20 h-0.5 bg-gradient-to-r from-green-300 to-green-100 rounded-full"></div>
+                <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
+                <div className="w-12 h-0.5 bg-gradient-to-r from-green-100 to-transparent rounded-full"></div>
+              </div>
             </div>
             <button
               onClick={onClose}
-              className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 hover:scale-110 flex-shrink-0 border border-white/20"
+              className="group w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center hover:bg-white/30 transition-all duration-300 hover:scale-110 flex-shrink-0 border border-white/20 hover:border-white/40 hover:shadow-lg hover:shadow-white/20"
             >
-              <X className="w-6 h-6 text-white" />
+              <X className="w-6 h-6 text-white group-hover:rotate-90 transition-transform duration-300" />
             </button>
           </div>
           
           {/* Enhanced decorative element */}
-          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-green-300 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-green-300 via-green-200 to-transparent"></div>
         </div>
 
         {/* Success Message */}
@@ -375,7 +380,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
           {/* Full Name */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Full Name *
+              Nom complet *
             </label>
             <div className="relative group">
               <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#2d5016] transition-colors" />
@@ -384,7 +389,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
                 value={formData.full_name}
                 onChange={(e) => handleInputChange('full_name', e.target.value)}
                 className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-[#2d5016]/20 focus:border-[#2d5016] transition-all duration-300 bg-gray-50/50 hover:bg-white"
-                placeholder="Enter your full name"
+                placeholder="Entrez votre nom complet"
                 required
               />
             </div>
@@ -393,7 +398,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
           {/* Email or Phone */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Email or Phone *
+              Email ou Téléphone *
             </label>
             <div className="relative group">
               <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#2d5016] transition-colors" />
@@ -402,7 +407,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
                 value={formData.email_or_phone}
                 onChange={(e) => handleInputChange('email_or_phone', e.target.value)}
                 className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-[#2d5016]/20 focus:border-[#2d5016] transition-all duration-300 bg-gray-50/50 hover:bg-white"
-                placeholder="Enter your email or phone number"
+                placeholder="Entrez votre email ou téléphone"
                 required
               />
             </div>
@@ -411,7 +416,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
           {/* Travel Type */}
           <div className="space-y-3">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              You come with
+              Vous venez avec
             </label>
             <div className="grid grid-cols-2 gap-4">
               <button
@@ -431,7 +436,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
                   }`}>
                     <Users className="w-4 h-4" />
                   </div>
-                  <span className="font-semibold">Family</span>
+                  <span className="font-semibold">Famille</span>
                 </div>
               </button>
               <button
@@ -451,7 +456,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
                   }`}>
                     <Users className="w-4 h-4" />
                   </div>
-                  <span className="font-semibold">Friends</span>
+                  <span className="font-semibold">Amis</span>
                 </div>
               </button>
             </div>
@@ -461,7 +466,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Check-in Date *
+                Date d'arrivée *
               </label>
               <div className="relative calendar-container group">
                 <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#2d5016] transition-colors" />
@@ -471,7 +476,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
                   onClick={() => setShowCheckInCalendar(!showCheckInCalendar)}
                   readOnly
                   className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-[#2d5016]/20 focus:border-[#2d5016] transition-all duration-300 bg-gray-50/50 hover:bg-white cursor-pointer"
-                  placeholder="Select check-in date"
+                  placeholder="Sélectionner la date d'arrivée"
                   required
                 />
                 {showCheckInCalendar && (
@@ -511,7 +516,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Check-out Date *
+                Date de départ *
               </label>
               <div className="relative calendar-container group">
                 <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#2d5016] transition-colors" />
@@ -521,7 +526,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
                   onClick={() => setShowCheckOutCalendar(!showCheckOutCalendar)}
                   readOnly
                   className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-[#2d5016]/20 focus:border-[#2d5016] transition-all duration-300 bg-gray-50/50 hover:bg-white cursor-pointer"
-                  placeholder="Select check-out date"
+                  placeholder="Sélectionner la date de départ"
                   required
                 />
                 {showCheckOutCalendar && (
@@ -564,7 +569,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
           {/* Guest Count */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Number of Guests *
+              Nombre de personnes *
             </label>
             <div className="relative group">
               <Users className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#2d5016] transition-colors" />
@@ -585,14 +590,14 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
           {/* Special Requests */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Special Requests (Optional)
+              Demandes spéciales (Optionnel)
             </label>
             <div className="relative group">
               <MessageSquare className="absolute left-4 top-4 w-5 h-5 text-gray-400 group-focus-within:text-[#2d5016] transition-colors" />
               <textarea
                 value={formData.special_requests}
                 onChange={(e) => handleInputChange('special_requests', e.target.value)}
-                placeholder="Any special requests or requirements..."
+                placeholder="Toute demande spéciale ou exigence..."
                 rows={3}
                 className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-[#2d5016]/20 focus:border-[#2d5016] transition-all duration-300 bg-gray-50/50 hover:bg-white resize-none"
               />
@@ -626,7 +631,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
             
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 font-medium">€{property.price_per_night} × {nights} nights</span>
+                <span className="text-gray-600 font-medium">€{property.price_per_night} × {nights} nuits</span>
                 <span className="font-semibold text-lg">€{totalPrice}</span>
               </div>
               <div className="border-t border-gray-300 pt-4">
@@ -647,17 +652,17 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
             {loading ? (
               <div className="flex items-center space-x-3">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                <span>Creating booking...</span>
+                <span>Création de la réservation...</span>
               </div>
             ) : success ? (
               <div className="flex items-center space-x-3">
                 <CheckCircle className="w-5 h-5" />
-                <span>Booking Created!</span>
+                <span>Réservation créée !</span>
               </div>
             ) : (
               <div className="flex items-center space-x-3">
                 <Euro className="w-5 h-5" />
-                <span>Book Now - €{totalPrice}</span>
+                <span>Réserver maintenant - €{totalPrice}</span>
               </div>
             )}
           </Button>
