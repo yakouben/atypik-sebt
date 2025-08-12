@@ -17,66 +17,7 @@ export async function GET(request: NextRequest) {
 
     console.log('🔍 Fetching bookings for owner:', ownerId);
 
-    // First, get all property IDs that belong to this owner (including deleted ones)
-    const { data: ownerProperties, error: propertiesError } = await supabase
-      .from('properties')
-      .select('id')
-      .eq('owner_id', ownerId);
-
-    if (propertiesError) {
-      console.error('Error fetching owner properties:', propertiesError);
-      return NextResponse.json(
-        { error: 'Failed to fetch owner properties' },
-        { status: 500 }
-      );
-    }
-
-    const propertyIds = ownerProperties?.map(p => p.id) || [];
-    console.log('🔍 Owner property IDs:', propertyIds);
-
-    if (propertyIds.length === 0) {
-      console.log('🔍 No properties found for owner, checking for bookings with stored property data');
-      
-      // Even if no current properties, check for bookings with stored property data
-      let fallbackQuery = supabase
-        .from('bookings')
-        .select(`
-          *,
-          properties (
-            id,
-            name,
-            location,
-            images,
-            price_per_night,
-            owner_id
-          ),
-          profiles:client_id (
-            id,
-            full_name,
-            email
-          )
-        `)
-        .not('property_name', 'is', null); // Look for bookings with stored property data
-
-      if (status && status !== 'all') {
-        fallbackQuery = fallbackQuery.eq('status', status);
-      }
-
-      const { data: fallbackBookings, error: fallbackError } = await fallbackQuery
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      if (!fallbackError && fallbackBookings && fallbackBookings.length > 0) {
-        // Check if any of these bookings belong to this owner by checking stored property data
-        // This would require additional logic, for now return empty
-        return NextResponse.json({ 
-          data: [],
-          count: 0
-        });
-      }
-    }
-
-    // Build the main query for bookings that match the property IDs
+    // Build the query based on parameters
     let query = supabase
       .from('bookings')
       .select(`
@@ -95,7 +36,7 @@ export async function GET(request: NextRequest) {
           email
         )
       `)
-      .in('property_id', propertyIds);
+      .eq('properties.owner_id', ownerId);
 
     // Filter by status if provided
     if (status && status !== 'all') {

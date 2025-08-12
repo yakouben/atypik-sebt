@@ -97,6 +97,7 @@ export default function GlampingGuestExperience() {
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [clickedPropertyId, setClickedPropertyId] = useState<string | null>(null);
 
   useEffect(() => {
     loadProperties();
@@ -280,8 +281,14 @@ export default function GlampingGuestExperience() {
   };
 
   const handlePropertyClick = (propertyId: string) => {
+    // Immediate visual feedback
+    setClickedPropertyId(propertyId);
+    
     // Optimistic navigation - start transition immediately
     router.push(`/properties/${propertyId}`);
+    
+    // Reset clicked state after a short delay
+    setTimeout(() => setClickedPropertyId(null), 200);
   };
 
   const filteredProperties = properties.filter(property => {
@@ -640,7 +647,9 @@ export default function GlampingGuestExperience() {
                   {filteredProperties.map((property) => (
                     <div 
                       key={property.id} 
-                      className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500 cursor-pointer group"
+                      className={`bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-200 cursor-pointer group ${
+                        clickedPropertyId === property.id ? 'scale-95 shadow-2xl' : ''
+                      }`}
                       onClick={() => handlePropertyClick(property.id)}
                     >
                       <div className="relative h-48 sm:h-52 lg:h-48 xl:h-52 bg-gradient-to-br from-gray-200 to-gray-300 overflow-hidden">
@@ -648,7 +657,8 @@ export default function GlampingGuestExperience() {
                           <img 
                             src={property.images[0]} 
                             alt={property.name} 
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -657,7 +667,7 @@ export default function GlampingGuestExperience() {
                         )}
                         
                         {/* Gradient Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                         
                         <div className="absolute bottom-3 left-3">
                           <span className="bg-[#4A7C59] text-white px-3 py-2 rounded-full text-xs font-medium shadow-lg backdrop-blur-sm">
@@ -674,7 +684,7 @@ export default function GlampingGuestExperience() {
                         </div>
                       </div>
                       <div className="p-4 sm:p-5 lg:p-4 xl:p-5">
-                        <h3 className="font-semibold text-[#2C3E37] mb-2 text-base sm:text-lg group-hover:text-green-600 transition-colors duration-300 line-clamp-1">{property.name}</h3>
+                        <h3 className="font-semibold text-[#2C3E37] mb-2 text-base sm:text-lg group-hover:text-green-600 transition-colors duration-200 line-clamp-1">{property.name}</h3>
                         <div className="flex items-center text-gray-600 mb-3">
                           <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
                           <span className="text-sm line-clamp-1">{property.location}</span>
@@ -697,14 +707,16 @@ export default function GlampingGuestExperience() {
                         </div>
                         
                         <button 
-                          className="w-full bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg flex items-center justify-center space-x-2 text-sm sm:text-base group-hover:scale-105"
+                          className={`w-full bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg flex items-center justify-center space-x-2 text-sm sm:text-base group-hover:scale-105 ${
+                            clickedPropertyId === property.id ? 'bg-green-700 shadow-xl' : ''
+                          }`}
                           onClick={(e) => {
                             e.stopPropagation();
                             handlePropertyClick(property.id);
                           }}
                         >
                           <Euro className="w-4 h-4 mr-1" />
-                          <span>Réserver</span>
+                          <span>{clickedPropertyId === property.id ? 'Chargement...' : 'Réserver'}</span>
                           <ArrowRight className="w-4 h-4" />
                         </button>
                       </div>
