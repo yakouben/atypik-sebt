@@ -315,18 +315,53 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-100 scrollbar-custom">
         {/* Enhanced Header */}
         <div className="relative bg-gradient-to-br from-[#2d5016] to-[#1a3a0f] rounded-t-3xl p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold mb-1">Book this property</h2>
-              <p className="text-green-100 text-sm opacity-90">{property.name}</p>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold mb-2">Book this property</h2>
+              <p className="text-green-100 text-lg font-semibold opacity-95">{property.name}</p>
             </div>
             <button
               onClick={onClose}
-              className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 hover:scale-110"
+              className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-300 hover:scale-110 flex-shrink-0"
             >
               <X className="w-5 h-5 text-white" />
             </button>
           </div>
+          
+          {/* Property Image and Details */}
+          <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+            {/* Property Image */}
+            <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border-2 border-white/30">
+              {property.images && property.images.length > 0 ? (
+                <img 
+                  src={property.images[0]} 
+                  alt={property.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+                  <span className="text-gray-600 text-xs font-medium">No Image</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Property Details */}
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-white text-lg mb-1 truncate">{property.name}</h3>
+              <p className="text-green-100 text-sm opacity-90 mb-2">{property.location}</p>
+              <div className="flex items-center space-x-4 text-sm">
+                <span className="flex items-center space-x-1">
+                  <Users className="w-4 h-4 text-green-200" />
+                  <span className="text-green-100">Max {property.max_guests} guests</span>
+                </span>
+                <span className="flex items-center space-x-1">
+                  <Euro className="w-4 h-4 text-green-200" />
+                  <span className="text-green-100">€{property.price_per_night}/night</span>
+                </span>
+              </div>
+            </div>
+          </div>
+          
           {/* Decorative element */}
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
         </div>
@@ -592,6 +627,29 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
 
           {/* Enhanced Price Summary */}
           <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-6 border border-gray-200">
+            <div className="flex items-start space-x-4 mb-4">
+              {/* Small Property Image */}
+              <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-gray-200 flex-shrink-0">
+                {property.images && property.images.length > 0 ? (
+                  <img 
+                    src={property.images[0]} 
+                    alt={property.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+                    <span className="text-gray-600 text-xs font-medium">No Image</span>
+                  </div>
+                )}
+              </div>
+              
+              {/* Property Info */}
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold text-gray-800 text-lg mb-1 truncate">{property.name}</h4>
+                <p className="text-gray-600 text-sm">{property.location}</p>
+              </div>
+            </div>
+            
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 font-medium">€{property.price_per_night} × {nights} nights</span>
