@@ -315,7 +315,7 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-100 scrollbar-hide">
         {/* Enhanced Header */}
         <div className="relative bg-gradient-to-br from-[#2d5016] to-[#1a3a0f] rounded-t-3xl p-6 text-white">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between">
             <div className="flex-1">
               <h2 className="text-2xl font-bold mb-2">Book this property</h2>
             </div>
@@ -325,40 +325,6 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
             >
               <X className="w-5 h-5 text-white" />
             </button>
-          </div>
-          
-          {/* Property Image and Details */}
-          <div className="flex items-center space-x-4 bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
-            {/* Property Image */}
-            <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border-2 border-white/30">
-              {property.images && property.images.length > 0 ? (
-                <img 
-                  src={property.images[0]} 
-                  alt={property.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                  <span className="text-gray-600 text-xs font-medium">No Image</span>
-                </div>
-              )}
-            </div>
-            
-            {/* Property Details */}
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-white text-lg mb-1 truncate">{property.name}</h3>
-              <p className="text-green-100 text-sm opacity-90 mb-2">{property.location}</p>
-              <div className="flex items-center space-x-4 text-sm">
-                <span className="flex items-center space-x-1">
-                  <Users className="w-4 h-4 text-green-200" />
-                  <span className="text-green-100">Max {property.max_guests} guests</span>
-                </span>
-                <span className="flex items-center space-x-1">
-                  <Euro className="w-4 h-4 text-green-200" />
-                  <span className="text-green-100">€{property.price_per_night}/night</span>
-                </span>
-              </div>
-            </div>
           </div>
           
           {/* Decorative element */}
