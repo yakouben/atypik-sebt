@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch bookings for the client
+    // Fetch bookings for the client with stored property data
     const { data: bookings, error: bookingsError } = await supabase
       .from('bookings')
       .select(`
@@ -52,6 +52,13 @@ export async function GET(request: NextRequest) {
         travel_type,
         created_at,
         updated_at,
+        // Stored property data (from the form)
+        property_name,
+        property_location,
+        property_price_per_night,
+        property_max_guests,
+        property_images,
+        // Fallback: try to get live property data if available
         properties (
           id,
           name,
@@ -70,9 +77,67 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Transform the data to combine stored property data with client data
+    const transformedBookings = (bookings || []).map(booking => {
+      // Prioritize stored property data (from the form) over joined data
+      const hasStoredPropertyData = booking.property_name && booking.property_location;
+      const hasLivePropertyData = booking.properties && booking.properties.id;
+      
+      let finalPropertyData;
+      
+      if (hasStoredPropertyData) {
+        // Use stored property data (most reliable)
+        finalPropertyData = {
+          id: 'stored',
+          name: booking.property_name,
+          location: booking.property_location,
+          images: booking.property_images || [],
+          price_per_night: booking.property_price_per_night || 0,
+          max_guests: booking.property_max_guests || 0
+        };
+      } else if (hasLivePropertyData) {
+        // Fallback to live property data
+        finalPropertyData = {
+          id: booking.properties.id,
+          name: booking.properties.name,
+          location: booking.properties.location,
+          images: booking.properties.images || [],
+          price_per_night: 0, // Not available in joined data
+          max_guests: 0 // Not available in joined data
+        };
+      } else {
+        // No property data available
+        finalPropertyData = {
+          id: 'unknown',
+          name: 'Propriété inconnue',
+          location: 'Localisation inconnue',
+          images: [],
+          price_per_night: 0,
+          max_guests: 0
+        };
+      }
+
+      return {
+        id: booking.id,
+        check_in_date: booking.check_in_date,
+        check_out_date: booking.check_out_date,
+        total_price: booking.total_price,
+        status: booking.status,
+        guest_count: booking.guest_count,
+        special_requests: booking.special_requests,
+        full_name: booking.full_name,
+        email_or_phone: booking.email_or_phone,
+        travel_type: booking.travel_type,
+        created_at: booking.created_at,
+        updated_at: booking.updated_at,
+        // Combined property data
+        properties: finalPropertyData
+      };
+    });
+
     return NextResponse.json({
       success: true,
-      data: bookings || [],
+      data: transformedBookings,
       message: 'Client bookings fetched successfully'
     });
 

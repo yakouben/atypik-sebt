@@ -22,6 +22,13 @@ export async function GET(request: NextRequest) {
       .from('bookings')
       .select(`
         *,
+        // Stored property data (from the form - most reliable)
+        property_name,
+        property_location,
+        property_price_per_night,
+        property_max_guests,
+        property_images,
+        // Fallback: try to get live property data if available
         properties (
           id,
           name,
@@ -74,19 +81,14 @@ export async function GET(request: NextRequest) {
       const propertyData = booking.properties || {};
       const clientData = booking.profiles || {};
       
-      // Prioritize stored property data from booking record over joined data
-      // This ensures property info is available even if property gets deleted
-      const hasValidProperty = propertyData && propertyData.id && propertyData.name;
+      // PRIORITY 1: Stored property data from the form (most reliable)
+      // This is the data that was sent when the client created the booking
       const hasStoredPropertyData = booking.property_name && booking.property_location;
       
-      console.log('🔍 Property data flags:', {
-        hasValidProperty,
-        hasStoredPropertyData,
-        storedName: booking.property_name,
-        storedLocation: booking.property_location
-      });
+      // PRIORITY 2: Live property data from properties table (if property still exists)
+      const hasValidProperty = propertyData && propertyData.id && propertyData.name;
       
-      // If no property data available, try to fetch it directly from properties table
+      // PRIORITY 3: Fallback fetch from properties table (if neither above available)
       let fallbackPropertyData = null;
       if (!hasValidProperty && !hasStoredPropertyData && booking.property_id) {
         try {
@@ -105,25 +107,58 @@ export async function GET(request: NextRequest) {
         }
       }
       
-      const finalProperty = hasValidProperty ? {
-        id: propertyData.id,
-        name: propertyData.name,
-        location: propertyData.location || 'Localisation inconnue',
-        images: propertyData.images || [],
-        price_per_night: propertyData.price_per_night || 0
-      } : hasStoredPropertyData ? {
-        id: 'stored',
-        name: booking.property_name,
-        location: booking.property_location,
-        images: booking.property_images || [],
-        price_per_night: booking.property_price_per_night || 0
-      } : fallbackPropertyData ? {
-        id: fallbackPropertyData.id,
-        name: fallbackPropertyData.name,
-        location: fallbackPropertyData.location || 'Localisation inconnue',
-        images: fallbackPropertyData.images || [],
-        price_per_night: fallbackPropertyData.price_per_night || 0
-      } : null;
+      // Determine final property data based on priority
+      let finalProperty;
+      
+      if (hasStoredPropertyData) {
+        // PRIORITY 1: Use stored data from the form
+        finalProperty = {
+          id: 'stored',
+          name: booking.property_name,
+          location: booking.property_location,
+          images: booking.property_images || [],
+          price_per_night: booking.property_price_per_night || 0,
+          max_guests: booking.property_max_guests || 0,
+          source: 'stored_from_form'
+        };
+        console.log('🔍 Using STORED property data from form');
+      } else if (hasValidProperty) {
+        // PRIORITY 2: Use live property data
+        finalProperty = {
+          id: propertyData.id,
+          name: propertyData.name,
+          location: propertyData.location || 'Localisation inconnue',
+          images: propertyData.images || [],
+          price_per_night: propertyData.price_per_night || 0,
+          max_guests: 0, // Not available in joined data
+          source: 'live_property'
+        };
+        console.log('🔍 Using LIVE property data');
+      } else if (fallbackPropertyData) {
+        // PRIORITY 3: Use fallback fetched data
+        finalProperty = {
+          id: fallbackPropertyData.id,
+          name: fallbackPropertyData.name,
+          location: fallbackPropertyData.location || 'Localisation inconnue',
+          images: fallbackPropertyData.images || [],
+          price_per_night: fallbackPropertyData.price_per_night || 0,
+          max_guests: 0, // Not available in fallback data
+          source: 'fallback_fetch'
+        };
+        console.log('🔍 Using FALLBACK property data');
+      } else {
+        // No property data available
+        finalProperty = {
+          id: 'unknown',
+          name: 'Propriété supprimée',
+          location: 'Localisation inconnue',
+          images: [],
+          price_per_night: 0,
+          max_guests: 0,
+          source: 'no_data'
+        };
+        console.log('🔍 No property data available');
+      }
       
       console.log('🔍 Final property data for dashboard:', finalProperty);
       
