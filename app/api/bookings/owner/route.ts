@@ -17,7 +17,32 @@ export async function GET(request: NextRequest) {
 
     console.log('🔍 Fetching bookings for owner:', ownerId);
 
-    // Build the query based on parameters
+    // First, get all properties owned by this owner
+    const { data: ownerProperties, error: propertiesError } = await supabase
+      .from('properties')
+      .select('id')
+      .eq('owner_id', ownerId);
+
+    if (propertiesError) {
+      console.error('Error fetching owner properties:', propertiesError);
+      return NextResponse.json(
+        { error: 'Failed to fetch owner properties' },
+        { status: 500 }
+      );
+    }
+
+    if (!ownerProperties || ownerProperties.length === 0) {
+      console.log('🔍 No properties found for owner:', ownerId);
+      return NextResponse.json({ 
+        data: [],
+        count: 0
+      });
+    }
+
+    const propertyIds = ownerProperties.map(p => p.id);
+    console.log('🔍 Found property IDs for owner:', propertyIds);
+
+    // Now get all bookings for these properties
     let query = supabase
       .from('bookings')
       .select(`
@@ -36,7 +61,7 @@ export async function GET(request: NextRequest) {
           email
         )
       `)
-      .eq('properties.owner_id', ownerId);
+      .in('property_id', propertyIds);
 
     // Filter by status if provided
     if (status && status !== 'all') {

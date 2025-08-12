@@ -170,6 +170,14 @@ export default function GlampingDashboard() {
         console.log('🔍 Owner bookings API response:', bookingsData);
         if (bookingsData.data) {
           console.log('🔍 First booking data:', bookingsData.data[0]);
+          console.log('🔍 First booking properties:', bookingsData.data[0]?.properties);
+          console.log('🔍 All bookings properties check:', bookingsData.data.map(b => ({
+            id: b.id,
+            hasProperties: !!b.properties,
+            propertyName: b.properties?.name,
+            propertyLocation: b.properties?.location,
+            propertyImages: b.properties?.images
+          })));
           setBookings(bookingsData.data);
         }
       }
@@ -1124,7 +1132,15 @@ export default function GlampingDashboard() {
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
-                  {filteredBookings.map((booking) => (
+                  {filteredBookings.map((booking) => {
+                    console.log('🔍 Rendering booking:', {
+                      id: booking.id,
+                      hasProperties: !!booking.properties,
+                      propertyName: booking.properties?.name,
+                      propertyLocation: booking.properties?.location,
+                      propertyImages: booking.properties?.images
+                    });
+                    return (
                     <div key={booking.id} className="p-6 hover:bg-gray-50 transition-colors">
                       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Property Information */}
@@ -1334,7 +1350,8 @@ export default function GlampingDashboard() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  );
+                })}
                 </div>
               )}
             </div>
