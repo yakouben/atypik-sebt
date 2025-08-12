@@ -28,6 +28,8 @@ import {
 import { useAuthContext } from './AuthProvider';
 import { useRouter } from 'next/navigation';
 
+type TabType = 'dashboard' | 'properties' | 'bookings' | 'profile';
+
 interface Booking {
   id: string;
   check_in_date: string;
@@ -52,7 +54,7 @@ export default function ClientDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -229,100 +231,31 @@ export default function ClientDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-                <TreePine className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-br from-[#2C3E37] to-[#4A7C59] rounded-xl flex items-center justify-center">
+                <Home className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">
-                  Bienvenue !
+                <h1 className="text-xl font-bold text-[#2C3E37]">
+                  Dashboard
                 </h1>
-                <p className="text-sm text-gray-600">Découvrez des hébergements uniques</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input 
-                  type="text" 
-                  placeholder="Rechercher des propriétés..." 
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent w-64"
-                />
-              </div>
-              <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors">
-                <User className="w-5 h-5" />
-                <span className="hidden sm:inline">Profil</span>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <button 
+                onClick={handleSignOut}
+                className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 px-3 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-sm border border-red-200 text-sm"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Déconnexion</span>
               </button>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Navigation */}
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4 sm:space-x-8">
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className={`flex items-center space-x-2 transition-colors ${
-                  activeTab === 'dashboard' 
-                    ? 'text-green-600 font-medium' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <LayoutDashboard className="w-5 h-5" />
-                <span className="hidden sm:inline">Tableau de bord</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('properties')}
-                className={`flex items-center space-x-2 transition-colors ${
-                  activeTab === 'properties' 
-                    ? 'text-green-600 font-medium' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Home className="w-5 h-5" />
-                <span className="hidden sm:inline">Parcourir</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('bookings')}
-                className={`flex items-center space-x-2 transition-colors ${
-                  activeTab === 'bookings' 
-                    ? 'text-green-600 font-medium' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Calendar className="w-5 h-5" />
-                <span className="hidden sm:inline">Mes réservations</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`flex items-center space-x-2 transition-colors ${
-                  activeTab === 'profile' 
-                    ? 'text-green-600 font-medium' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <User className="w-5 h-5" />
-                <span className="hidden sm:inline">Profil</span>
-              </button>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button 
-                onClick={handleSignOut}
-                className="flex items-center justify-center w-10 h-10 sm:w-auto sm:h-auto sm:px-4 sm:py-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 rounded-full sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-sm border border-red-200"
-              >
-                <LogOut className="w-5 h-5" />
-                <span className="hidden sm:inline ml-2">Déconnexion</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -342,6 +275,110 @@ export default function ClientDashboard() {
                 <button className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-medium transition-all hover:bg-white/30 hover:scale-105 shadow-lg">
                   Commencer à explorer
                 </button>
+              </div>
+            </div>
+
+            {/* Modern Tab Navigation */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 sm:mb-8 overflow-hidden">
+              <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-3 sm:flex sm:justify-start">
+                  {/* Dashboard Tab */}
+                  <button
+                    onClick={() => setActiveTab('dashboard')}
+                    className={`relative group transition-all duration-300 ease-in-out ${
+                      activeTab === 'dashboard'
+                        ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
+                        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
+                      <div className="relative">
+                        <LayoutDashboard className={`w-5 h-5 sm:w-6 sm:w-6 transition-all duration-300 ${
+                          activeTab === 'dashboard' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
+                        }`} />
+                      </div>
+                      <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
+                        activeTab === 'dashboard' ? 'font-semibold' : 'font-medium'
+                      }`}>
+                        <span className="sm:hidden">Vue</span>
+                        <span className="hidden sm:inline">Vue d'ensemble</span>
+                      </span>
+                      
+                      {/* Animated Underline */}
+                      <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-out ${
+                        activeTab === 'dashboard' 
+                          ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
+                          : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
+                      }`} />
+                    </div>
+                  </button>
+
+                  {/* Properties Tab */}
+                  <button
+                    onClick={() => setActiveTab('properties')}
+                    className={`relative group transition-all duration-300 ease-in-out ${
+                      activeTab === ('properties' as TabType)
+                        ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
+                        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
+                      <div className="relative">
+                        <Home className={`w-5 h-5 sm:w-6 sm:w-6 transition-all duration-300 ${
+                          activeTab === ('properties' as TabType) ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
+                        }`} />
+                      </div>
+                      <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
+                        activeTab === ('properties' as TabType) ? 'font-semibold' : 'font-medium'
+                      }`}>
+                        <span className="sm:hidden">Props</span>
+                        <span className="hidden sm:inline">Propriétés</span>
+                      </span>
+                      
+                      {/* Animated Underline */}
+                      <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-out ${
+                        activeTab === ('properties' as TabType) 
+                          ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
+                          : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
+                      }`} />
+                    </div>
+                  </button>
+
+                  {/* Bookings Tab */}
+                  <button
+                    onClick={() => setActiveTab('bookings')}
+                    className={`relative group transition-all duration-300 ease-in-out ${
+                      activeTab === ('bookings' as TabType)
+                        ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
+                        : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
+                      <div className="relative">
+                        <Calendar className={`w-5 h-5 sm:w-6 sm:w-6 transition-all duration-300 ${
+                          activeTab === ('bookings' as TabType) ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
+                        }`} />
+                        {/* Badge for booking count */}
+                        <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-bold text-white">{bookings.length}</span>
+                        </div>
+                      </div>
+                      <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
+                        activeTab === ('bookings' as TabType) ? 'font-semibold' : 'font-medium'
+                      }`}>
+                        <span className="sm:hidden">Réserv</span>
+                        <span className="hidden sm:inline">Réservations</span>
+                      </span>
+                      
+                      {/* Animated Underline */}
+                      <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-out ${
+                        activeTab === ('bookings' as TabType) 
+                          ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
+                          : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
+                      }`} />
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
 
