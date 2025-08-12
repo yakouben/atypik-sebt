@@ -99,7 +99,7 @@ interface Reservation {
 }
 
 export default function GlampingDashboard() {
-  const { userProfile, getOwnerProperties, getOwnerBookings, signOut } = useAuthContext();
+  const { userProfile, getOwnerProperties, signOut } = useAuthContext();
   const router = useRouter();
   const [properties, setProperties] = useState<Property[]>([]);
   const [bookings, setBookings] = useState<Reservation[]>([]);
@@ -166,8 +166,12 @@ export default function GlampingDashboard() {
   const loadBookings = async () => {
     try {
       if (userProfile?.id) {
-        const bookingsData = await getOwnerBookings(userProfile.id);
+        // Use direct API call instead of getOwnerBookings to get proper property data
+        const response = await fetch(`/api/bookings/owner?ownerId=${userProfile.id}`);
+        const bookingsData = await response.json();
+        console.log('🔍 Owner bookings API response:', bookingsData);
         if (bookingsData.data) {
+          console.log('🔍 First booking data:', bookingsData.data[0]);
           setBookings(bookingsData.data);
         }
       }
@@ -188,15 +192,12 @@ export default function GlampingDashboard() {
     if (bookingSearchQuery) {
       const query = bookingSearchQuery.toLowerCase();
       filtered = filtered.filter(booking => 
-        // Search in live property data
+        // Search in property data (both live and stored)
         (booking.property?.name && booking.property.name.toLowerCase().includes(query)) ||
         (booking.property?.location && booking.property.location.toLowerCase().includes(query)) ||
-        // Search in stored property data (for deleted properties)
-        (booking.property_name && booking.property_name.toLowerCase().includes(query)) ||
-        (booking.property_location && booking.property_location.toLowerCase().includes(query)) ||
         // Search in client information
-        booking.full_name.toLowerCase().includes(query) ||
-        booking.email_or_phone.toLowerCase().includes(query)
+        (booking.full_name && booking.full_name.toLowerCase().includes(query)) ||
+        (booking.email_or_phone && booking.email_or_phone.toLowerCase().includes(query))
       );
     }
 
