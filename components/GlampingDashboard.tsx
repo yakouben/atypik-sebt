@@ -78,6 +78,12 @@ interface Reservation {
   email_or_phone: string;
   travel_type: string;
   created_at: string;
+  // Stored property details for persistence
+  property_name?: string;
+  property_location?: string;
+  property_price_per_night?: number;
+  property_max_guests?: number;
+  property_images?: string[];
   property?: {
     id: string;
     name: string;
@@ -185,6 +191,9 @@ export default function GlampingDashboard() {
         // Search in live property data
         (booking.property?.name && booking.property.name.toLowerCase().includes(query)) ||
         (booking.property?.location && booking.property.location.toLowerCase().includes(query)) ||
+        // Search in stored property data (for deleted properties)
+        (booking.property_name && booking.property_name.toLowerCase().includes(query)) ||
+        (booking.property_location && booking.property_location.toLowerCase().includes(query)) ||
         // Search in client information
         booking.full_name.toLowerCase().includes(query) ||
         booking.email_or_phone.toLowerCase().includes(query)

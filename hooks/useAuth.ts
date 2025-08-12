@@ -422,20 +422,18 @@ export function useAuth() {
 
   const getOwnerBookings = async (ownerId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('bookings')
-        .select(`
-          *,
-          properties!inner(owner_id),
-          profiles!bookings_client_id_fkey(full_name, email)
-        `)
-        .eq('properties.owner_id', ownerId)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      return { data, error: null }
+      // Use the API route instead of direct Supabase query
+      const response = await fetch(`/api/bookings/owner?ownerId=${ownerId}`);
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to fetch owner bookings');
+      }
+      
+      return { data: result.data, error: null };
     } catch (error) {
-      return { data: null, error }
+      console.error('Error fetching owner bookings:', error);
+      return { data: null, error };
     }
   }
 

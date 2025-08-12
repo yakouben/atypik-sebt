@@ -238,7 +238,13 @@ export default function BookingForm({ isOpen, onClose, property }: BookingFormPr
         total_price: totalPrice,
         full_name: formData.full_name,
         email_or_phone: formData.email_or_phone,
-        travel_type: formData.travel_type
+        travel_type: formData.travel_type,
+        // Automatically include property details for persistence
+        property_name: property.name,
+        property_location: property.location,
+        property_price_per_night: property.price_per_night,
+        property_max_guests: property.max_guests,
+        property_images: property.images || [] // Include images
       };
 
       console.log('Submitting booking data:', bookingData);
