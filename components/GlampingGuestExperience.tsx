@@ -88,6 +88,8 @@ export default function GlampingGuestExperience() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [propertiesLoading, setPropertiesLoading] = useState(false);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeTab, setActiveTab] = useState('properties');
@@ -108,7 +110,8 @@ export default function GlampingGuestExperience() {
   }, [bookings, selectedStatus, searchQuery]);
 
   const loadProperties = async () => {
-    setLoading(true);
+    // Don't block the entire UI for property loading
+    setPropertiesLoading(true);
     try {
       const url = selectedCategory === 'all' 
         ? '/api/properties?published=true&available=true' 
@@ -119,7 +122,7 @@ export default function GlampingGuestExperience() {
       
       if (response.ok && result.data) {
         setProperties(result.data);
-        console.log('Properties loaded successfully:', result.data);
+        // Remove console.log for better performance
       } else {
         console.error('Error loading properties:', result.error);
         setProperties([]);
@@ -128,18 +131,19 @@ export default function GlampingGuestExperience() {
       console.error('Error loading properties:', error);
       setProperties([]);
     } finally {
-      setLoading(false);
+      setPropertiesLoading(false);
     }
   };
 
   const loadBookings = async () => {
+    setBookingsLoading(true);
     try {
       const response = await fetch(`/api/bookings/client?clientId=${userProfile!.id}`);
       const result = await response.json();
       
       if (response.ok && result.data) {
         setBookings(result.data);
-        console.log('Bookings loaded successfully:', result.data);
+        // Remove console.log for better performance
       } else {
         console.error('Error loading bookings:', result.error);
         setBookings([]);
@@ -147,6 +151,8 @@ export default function GlampingGuestExperience() {
     } catch (error) {
       console.error('Error loading bookings:', error);
       setBookings([]);
+    } finally {
+      setBookingsLoading(false);
     }
   };
 
@@ -274,6 +280,7 @@ export default function GlampingGuestExperience() {
   };
 
   const handlePropertyClick = (propertyId: string) => {
+    // Optimistic navigation - start transition immediately
     router.push(`/properties/${propertyId}`);
   };
 
@@ -291,7 +298,10 @@ export default function GlampingGuestExperience() {
     return 'Bonsoir';
   };
 
-  if (loading) {
+  // Only show main loading for initial load, not for category changes
+  const isInitialLoading = loading && properties.length === 0 && bookings.length === 0;
+
+  if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -456,7 +466,7 @@ export default function GlampingGuestExperience() {
 
         {/* Main Content */}
         {activeTab === 'dashboard' && (
-          <>
+          <div className="space-y-6">
             {/* Enhanced Stats Cards */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
               {/* Single Line Horizontal Navbar - No Wrapping */}
@@ -465,7 +475,7 @@ export default function GlampingGuestExperience() {
                   <div className="flex flex-col items-center text-center">
                     <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mb-1 sm:mb-2" />
                     <p className="text-xs font-medium text-blue-700 mb-1">Total</p>
-                    <p className="text-sm sm:text-lg font-bold text-blue-900">{stats.total}</p>
+                    <p className="text-sm sm:text-lg font-bold text-blue-900">{bookingsLoading ? '...' : stats.total}</p>
                   </div>
                 </div>
                 
@@ -473,7 +483,7 @@ export default function GlampingGuestExperience() {
                   <div className="flex flex-col items-center text-center">
                     <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 mb-1 sm:mb-2" />
                     <p className="text-xs font-medium text-yellow-700 mb-1">En attente</p>
-                    <p className="text-sm sm:text-lg font-bold text-yellow-900">{stats.pending}</p>
+                    <p className="text-sm sm:text-lg font-bold text-yellow-900">{bookingsLoading ? '...' : stats.pending}</p>
                   </div>
                 </div>
                 
@@ -481,7 +491,7 @@ export default function GlampingGuestExperience() {
                   <div className="flex flex-col items-center text-center">
                     <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mb-1 sm:mb-2" />
                     <p className="text-xs font-medium text-green-700 mb-1">Confirmées</p>
-                    <p className="text-sm sm:text-lg font-bold text-green-900">{stats.confirmed}</p>
+                    <p className="text-sm sm:text-lg font-bold text-green-900">{bookingsLoading ? '...' : stats.confirmed}</p>
                   </div>
                 </div>
                 
@@ -489,7 +499,7 @@ export default function GlampingGuestExperience() {
                   <div className="flex flex-col items-center text-center">
                     <Euro className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A7C59] mb-1 sm:mb-2" />
                     <p className="text-xs font-medium text-[#4A7C59] mb-1">Total Dépensé</p>
-                    <p className="text-sm sm:text-lg font-bold text-[#2C3E37]">{formatPrice(stats.totalSpent)}</p>
+                    <p className="text-sm sm:text-lg font-bold text-[#2C3E37]">{bookingsLoading ? '...' : formatPrice(stats.totalSpent)}</p>
                   </div>
                 </div>
               </div>
@@ -509,7 +519,12 @@ export default function GlampingGuestExperience() {
                 </div>
               </div>
               
-              {bookings.length === 0 ? (
+              {bookingsLoading ? (
+                <div className="p-8 text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Chargement des réservations...</p>
+                </div>
+              ) : bookings.length === 0 ? (
                 <div className="p-8 text-center">
                   <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -557,7 +572,7 @@ export default function GlampingGuestExperience() {
                 </div>
               )}
             </div>
-          </>
+          </div>
         )}
 
         {activeTab === 'properties' && (
@@ -602,9 +617,12 @@ export default function GlampingGuestExperience() {
             
             {/* Properties Grid */}
             <div>
-              {loading ? (
+              {propertiesLoading ? (
                 <div className="flex items-center justify-center h-64">
-                  <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Chargement des propriétés...</p>
+                  </div>
                 </div>
               ) : filteredProperties.length === 0 ? (
                 <div className="text-center py-12">
@@ -815,7 +833,12 @@ export default function GlampingGuestExperience() {
                 </h3>
               </div>
 
-              {filteredBookings.length === 0 ? (
+              {bookingsLoading ? (
+                <div className="p-12 text-center">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Chargement des réservations...</p>
+                </div>
+              ) : filteredBookings.length === 0 ? (
                 <div className="p-12 text-center">
                   <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-xl font-medium text-gray-900 mb-2">
