@@ -84,12 +84,10 @@ interface Reservation {
   property_price_per_night?: number;
   property_max_guests?: number;
   property_images?: string[];
-  property?: {
-    id: string;
+  properties: {
     name: string;
     location: string;
     images: string[];
-    price_per_night: number;
   };
   client?: {
     id: string;
@@ -193,8 +191,8 @@ export default function GlampingDashboard() {
       const query = bookingSearchQuery.toLowerCase();
       filtered = filtered.filter(booking => 
         // Search in property data (both live and stored)
-        (booking.property?.name && booking.property.name.toLowerCase().includes(query)) ||
-        (booking.property?.location && booking.property.location.toLowerCase().includes(query)) ||
+        (booking.properties?.name && booking.properties.name.toLowerCase().includes(query)) ||
+        (booking.properties?.location && booking.properties.location.toLowerCase().includes(query)) ||
         // Search in client information
         (booking.full_name && booking.full_name.toLowerCase().includes(query)) ||
         (booking.email_or_phone && booking.email_or_phone.toLowerCase().includes(query))
@@ -1053,7 +1051,7 @@ export default function GlampingDashboard() {
             </div>
 
             {/* Info Message about Deleted Properties */}
-            {bookings.some(booking => !booking.property) && (
+            {bookings.some(booking => !booking.properties) && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
                 <div className="flex items-start space-x-3">
                   <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -1134,14 +1132,12 @@ export default function GlampingDashboard() {
                           <div className="flex items-start justify-between">
                             <div>
                               <h4 className="text-xl font-bold text-gray-900 mb-1">
-                                {booking.property ? (
+                                {booking.properties ? (
                                   <div className="flex items-center gap-2">
-                                    {booking.property.name}
-                                    {booking.property.id === 'stored' && (
-                                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                                        Données sauvegardées
-                                      </span>
-                                    )}
+                                    {booking.properties.name}
+                                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                                      Données sauvegardées
+                                    </span>
                                   </div>
                                 ) : (
                                   <span className="text-red-600 flex items-center gap-2">
@@ -1152,13 +1148,13 @@ export default function GlampingDashboard() {
                               </h4>
                               <p className="text-gray-600 flex items-center gap-2">
                                 <MapPin className="w-4 h-4" />
-                                {booking.property ? (
-                                  booking.property.location
+                                {booking.properties ? (
+                                  booking.properties.location
                                 ) : (
                                   <span className="text-gray-500">Localisation inconnue</span>
                                 )}
                               </p>
-                              {!booking.property && (
+                              {!booking.properties && (
                                 <p className="text-sm text-gray-500 mt-1">
                                   Cette propriété a été supprimée mais la réservation est conservée
                                 </p>
@@ -1173,17 +1169,17 @@ export default function GlampingDashboard() {
                           </div>
 
                           {/* Property Image */}
-                          {booking.property?.images && booking.property.images.length > 0 ? (
+                          {booking.properties?.images && booking.properties.images.length > 0 ? (
                             <div className="w-full h-32 rounded-lg overflow-hidden">
                               <img
-                                src={booking.property.images[0]}
-                                alt={booking.property.name}
+                                src={booking.properties.images[0]}
+                                alt={booking.properties.name}
                                 className="w-full h-full object-cover"
                               />
                             </div>
                           ) : (
                             <div className="w-full h-32 rounded-lg bg-gray-100 flex items-center justify-center">
-                              {booking.property ? (
+                              {booking.properties ? (
                                 <Camera className="w-8 h-8 text-gray-400" />
                               ) : (
                                 <div className="text-center text-gray-500">

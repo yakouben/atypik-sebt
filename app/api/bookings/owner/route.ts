@@ -140,7 +140,12 @@ export async function GET(request: NextRequest) {
         travel_type: booking.travel_type,
         created_at: booking.created_at,
         updated_at: booking.updated_at,
-        property: finalProperty,
+        properties: finalProperty ? {
+          id: finalProperty.id,
+          name: finalProperty.name,
+          location: finalProperty.location,
+          images: finalProperty.images
+        } : null,
         client: {
           id: clientData.id || 'unknown',
           full_name: clientData.full_name || 'Client inconnu',
