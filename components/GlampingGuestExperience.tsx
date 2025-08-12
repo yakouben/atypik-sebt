@@ -375,7 +375,7 @@ export default function GlampingGuestExperience() {
               >
                 <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
                   <div className="relative">
-                    <LayoutDashboard className={`w-5 h-5 sm:w-6 sm:w-6 transition-all duration-300 ${
+                    <LayoutDashboard className={`w-5 h-5 sm:w-6 transition-all duration-300 ${
                       activeTab === 'dashboard' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
                     }`} />
                   </div>
@@ -406,7 +406,7 @@ export default function GlampingGuestExperience() {
               >
                 <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
                   <div className="relative">
-                    <Home className={`w-5 h-5 sm:w-6 sm:w-6 transition-all duration-300 ${
+                    <Home className={`w-5 h-5 sm:w-6 transition-all duration-300 ${
                       activeTab === 'properties' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
                     }`} />
                   </div>
@@ -437,7 +437,7 @@ export default function GlampingGuestExperience() {
               >
                 <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
                   <div className="relative">
-                    <Calendar className={`w-5 h-5 sm:w-6 sm:w-6 transition-all duration-300 ${
+                    <Calendar className={`w-5 h-5 sm:w-6 transition-all duration-300 ${
                       activeTab === 'bookings' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
                     }`} />
                     {/* Badge for booking count */}

@@ -813,7 +813,7 @@ export default function GlampingDashboard() {
                           >
                             <Calendar className="w-4 h-4" />
                             <span>Reserve</span>
-                            <span className="ml-1 bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full font-medium min-w-[20px] text-center text-xs">
+                            <span className="ml-1 bg-blue-500 text-white px-1.5 py-0.5 rounded-full font-medium min-w-[20px] text-center">
                               {getReservationCount(property.id)}
                             </span>
                           </button>
