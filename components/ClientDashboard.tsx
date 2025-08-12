@@ -204,6 +204,17 @@ export default function ClientDashboard() {
     }
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      return 'Bonjour';
+    } else if (hour < 18) {
+      return 'Bon après-midi';
+    } else {
+      return 'Bonsoir';
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -322,7 +333,7 @@ export default function ClientDashboard() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div className="mb-4 sm:mb-0">
                   <h2 className="text-2xl sm:text-3xl font-bold mb-2">
-                    Bienvenue sur AtypikHouse !
+                    {getGreeting()}, {userProfile?.full_name?.split(' ')[0] || 'Client'}!
                   </h2>
                   <p className="text-green-100 text-lg">
                     Découvrez des hébergements insolites et éco-responsables en France et en Europe
