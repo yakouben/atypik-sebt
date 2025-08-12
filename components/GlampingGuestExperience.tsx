@@ -26,7 +26,8 @@ import {
   AlertCircle,
   Eye,
   Filter,
-  Search
+  Search,
+  LayoutDashboard
 } from 'lucide-react';
 import { useAuthContext } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
@@ -170,6 +171,21 @@ export default function GlampingGuestExperience() {
     setFilteredBookings(filtered);
   };
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'confirmed':
+        return <CheckCircle className="w-4 h-4" />;
+      case 'pending':
+        return <Clock className="w-4 h-4" />;
+      case 'cancelled':
+        return <XCircle className="w-4 h-4" />;
+      case 'completed':
+        return <CheckCircle className="w-4 h-4" />;
+      default:
+        return <AlertCircle className="w-4 h-4" />;
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
@@ -197,21 +213,6 @@ export default function GlampingGuestExperience() {
         return 'Terminé';
       default:
         return status;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'pending':
-        return <Clock className="w-4 h-4" />;
-      case 'cancelled':
-        return <XCircle className="w-4 h-4" />;
-      case 'completed':
-        return <CheckCircle className="w-4 h-4" />;
-      default:
-        return <AlertCircle className="w-4 h-4" />;
     }
   };
 
@@ -283,6 +284,13 @@ export default function GlampingGuestExperience() {
     return matchesSearch && matchesCategory;
   });
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bonjour';
+    if (hour < 18) return 'Bon après-midi';
+    return 'Bonsoir';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -297,21 +305,20 @@ export default function GlampingGuestExperience() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] rounded-lg flex items-center justify-center">
-                <TreePine className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-br from-[#2C3E37] to-[#4A7C59] rounded-xl flex items-center justify-center">
+                <Home className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-gray-900">Atypik</h1>
+              <div>
+                <h1 className="text-xl font-bold text-[#2C3E37]">
+                  Dashboard
+                </h1>
+              </div>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <User className="w-4 h-4" />
-                <span>{userProfile?.full_name || 'Utilisateur'}</span>
-              </div>
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <button 
                 onClick={handleSignOut}
                 className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 px-3 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-sm border border-red-200 text-sm"
@@ -325,52 +332,120 @@ export default function GlampingGuestExperience() {
       </div>
 
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold mb-4">
-              Bienvenue, {userProfile?.full_name?.split(' ')[0] || 'Voyageur'} !
-            </h1>
-            <p className="text-xl text-green-100">
-              Découvrez des hébergements uniques et gérez vos réservations
+      <div className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-4 sm:mb-0">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2">
+              {getGreeting()}, {userProfile?.full_name?.split(' ')[0] || 'Client'}!
+            </h2>
+            <p className="text-green-100 text-lg">
+              Découvrez des hébergements insolites et éco-responsables en France et en Europe
             </p>
           </div>
+          <button className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-medium transition-all hover:bg-white/30 hover:scale-105 shadow-lg">
+            Commencer à explorer
+          </button>
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
+      {/* Modern Tab Navigation */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 sm:mb-8 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-3 sm:flex sm:justify-start">
+            {/* Dashboard Tab */}
             <button
-              onClick={() => setActiveTab('properties')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'properties'
-                  ? 'border-[#4A7C59] text-[#4A7C59]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              onClick={() => setActiveTab('dashboard')}
+              className={`relative group transition-all duration-300 ease-in-out ${
+                activeTab === 'dashboard'
+                  ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
               }`}
             >
-              <div className="flex items-center space-x-2">
-                <Home className="w-5 h-5" />
-                <span>Hébergements</span>
+              <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
+                <div className="relative">
+                  <LayoutDashboard className={`w-5 h-5 sm:w-6 sm:w-6 transition-all duration-300 ${
+                    activeTab === 'dashboard' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
+                  }`} />
+                </div>
+                <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
+                  activeTab === 'dashboard' ? 'font-semibold' : 'font-medium'
+                }`}>
+                  <span className="sm:hidden">Vue</span>
+                  <span className="hidden sm:inline">Vue d'ensemble</span>
+                </span>
+                
+                {/* Animated Underline */}
+                <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-out ${
+                  activeTab === 'dashboard' 
+                    ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
+                    : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
+                }`} />
               </div>
             </button>
+
+            {/* Properties Tab */}
             <button
-              onClick={() => setActiveTab('bookings')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'bookings'
-                  ? 'border-[#4A7C59] text-[#4A7C59]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              onClick={() => setActiveTab('properties')}
+              className={`relative group transition-all duration-300 ease-in-out ${
+                activeTab === 'properties'
+                  ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
               }`}
             >
-              <div className="flex items-center space-x-2">
-                <Calendar className="w-5 h-5" />
-                <span>Mes Réservations</span>
-                {bookings.length > 0 && (
-                  <span className="bg-[#4A7C59] text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
-                    {bookings.length}
-                  </span>
-                )}
+              <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
+                <div className="relative">
+                  <Home className={`w-5 h-5 sm:w-6 sm:w-6 transition-all duration-300 ${
+                    activeTab === 'properties' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
+                  }`} />
+                </div>
+                <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
+                  activeTab === 'properties' ? 'font-semibold' : 'font-medium'
+                }`}>
+                  <span className="sm:hidden">Props</span>
+                  <span className="hidden sm:inline">Propriétés</span>
+                </span>
+                
+                {/* Animated Underline */}
+                <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-out ${
+                  activeTab === 'properties' 
+                    ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
+                    : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
+                }`} />
+              </div>
+            </button>
+
+            {/* Bookings Tab */}
+            <button
+              onClick={() => setActiveTab('bookings')}
+              className={`relative group transition-all duration-300 ease-in-out ${
+                activeTab === 'bookings'
+                  ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
+                  : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+              }`}
+            >
+              <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
+                <div className="relative">
+                  <Calendar className={`w-5 h-5 sm:w-6 sm:w-6 transition-all duration-300 ${
+                    activeTab === 'bookings' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
+                  }`} />
+                  {/* Badge for booking count */}
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-xs font-bold text-white">{bookings.length}</span>
+                  </div>
+                </div>
+                <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
+                  activeTab === 'bookings' ? 'font-semibold' : 'font-medium'
+                }`}>
+                  <span className="sm:hidden">Réserv</span>
+                  <span className="hidden sm:inline">Réservations</span>
+                </span>
+                
+                {/* Animated Underline */}
+                <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-out ${
+                  activeTab === 'bookings' 
+                    ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
+                    : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
+                }`} />
               </div>
             </button>
           </div>
@@ -379,6 +454,111 @@ export default function GlampingGuestExperience() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            {/* Enhanced Stats Cards */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+              {/* Single Line Horizontal Navbar - No Wrapping */}
+              <div className="flex flex-nowrap gap-2 sm:gap-3 overflow-x-auto pb-2">
+                <div className="flex-shrink-0 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-2 sm:p-3 min-w-[80px] sm:min-w-[100px] border border-blue-200">
+                  <div className="flex flex-col items-center text-center">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mb-1 sm:mb-2" />
+                    <p className="text-xs font-medium text-blue-700 mb-1">Total</p>
+                    <p className="text-sm sm:text-lg font-bold text-blue-900">{stats.total}</p>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl p-2 sm:p-3 min-w-[80px] sm:min-w-[100px] border border-yellow-200">
+                  <div className="flex flex-col items-center text-center">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 mb-1 sm:mb-2" />
+                    <p className="text-xs font-medium text-yellow-700 mb-1">En attente</p>
+                    <p className="text-sm sm:text-lg font-bold text-yellow-900">{stats.pending}</p>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0 bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-2 sm:p-3 min-w-[80px] sm:min-w-[100px] border border-green-200">
+                  <div className="flex flex-col items-center text-center">
+                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mb-1 sm:mb-2" />
+                    <p className="text-xs font-medium text-green-700 mb-1">Confirmées</p>
+                    <p className="text-sm sm:text-lg font-bold text-green-900">{stats.confirmed}</p>
+                  </div>
+                </div>
+                
+                <div className="flex-shrink-0 bg-gradient-to-r from-[#4A7C59]/10 to-[#2C3E37]/10 rounded-xl p-2 sm:p-3 min-w-[80px] sm:min-w-[100px] border border-[#4A7C59]/20">
+                  <div className="flex flex-col items-center text-center">
+                    <Euro className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A7C59] mb-1 sm:mb-2" />
+                    <p className="text-xs font-medium text-[#4A7C59] mb-1">Total Dépensé</p>
+                    <p className="text-sm sm:text-lg font-bold text-[#2C3E37]">{formatPrice(stats.totalSpent)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* My Bookings Section */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+              <div className="p-6 border-b border-gray-100">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">Mes réservations récentes</h3>
+                  <button 
+                    onClick={() => setActiveTab('bookings')}
+                    className="text-green-600 hover:text-green-700 font-medium text-sm transition-colors"
+                  >
+                    Voir toutes →
+                  </button>
+                </div>
+              </div>
+              
+              {bookings.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Aucune réservation encore
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    Commencez à explorer nos hébergements uniques et réservez votre premier séjour.
+                  </p>
+                  <button className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] hover:from-[#2C3E37] hover:to-[#4A7C59] text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#4A7C59]/25">
+                    Explorer les hébergements
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4 p-6">
+                  {bookings.slice(0, 3).map((booking) => (
+                    <div key={booking.id} className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => {
+                      setSelectedBooking(booking);
+                      setShowBookingModal(true);
+                    }}>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="text-lg font-semibold text-gray-900 mb-1">{booking.properties.name}</h4>
+                          <div className="flex items-center text-gray-600 mb-2">
+                            <MapPin className="w-4 h-4 mr-1" />
+                            <span className="text-sm">{booking.properties.location}</span>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <span>{formatDate(booking.check_in_date)} - {formatDate(booking.check_out_date)}</span>
+                            <span className="flex items-center">
+                              <Users className="w-4 h-4 mr-1" />
+                              {booking.guest_count} invités
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-right ml-4">
+                          <div className="text-lg font-bold text-gray-900 mb-2">{formatPrice(booking.total_price)}</div>
+                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(booking.status)}`}>
+                            {getStatusIcon(booking.status)}
+                            {getStatusText(booking.status)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'properties' && (
           <>
             {/* Search and Filters */}
