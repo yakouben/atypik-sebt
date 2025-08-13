@@ -97,6 +97,8 @@ export default function GlampingGuestExperience() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [clickedPropertyId, setClickedPropertyId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const propertiesPerPage = 4;
 
   useEffect(() => {
     loadProperties();
@@ -297,6 +299,33 @@ export default function GlampingGuestExperience() {
     return matchesSearch && matchesCategory;
   });
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredProperties.length / propertiesPerPage);
+  const startIndex = (currentPage - 1) * propertiesPerPage;
+  const endIndex = startIndex + propertiesPerPage;
+  const currentProperties = filteredProperties.slice(startIndex, endIndex);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Reset to first page when search or category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory]);
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Bonjour';
@@ -330,10 +359,10 @@ export default function GlampingGuestExperience() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-[#2C3E37]">
-                  Espace Client {/* Auto-deploy test */}
+                  Espace Client
                 </h1>
-            </div>
               </div>
+            </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <button 
                 onClick={handleSignOut}
@@ -491,7 +520,7 @@ export default function GlampingGuestExperience() {
                     <p className="text-gray-600">Chargement des propriétés...</p>
                   </div>
                 </div>
-              ) : filteredProperties.length === 0 ? (
+              ) : currentProperties.length === 0 ? (
                 <div className="text-center py-12">
                   <Mountain className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">Aucun hébergement trouvé</h3>
@@ -504,7 +533,7 @@ export default function GlampingGuestExperience() {
                 </div>
               ) : (
                 <div className={`grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`}>
-                  {filteredProperties.map((property) => (
+                  {currentProperties.map((property) => (
                     <div 
                       key={property.id} 
                       className={`bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-200 cursor-pointer group ${
@@ -585,6 +614,79 @@ export default function GlampingGuestExperience() {
                 </div>
               )}
             </div>
+
+            {/* Pagination Controls */}
+            {filteredProperties.length > propertiesPerPage && (
+              <div className="mt-8 flex items-center justify-center">
+                <div className="flex items-center space-x-2 bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3">
+                  {/* Previous Button */}
+                  <button
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                      currentPage === 1
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                    }`}
+                  >
+                    <ArrowRight className="w-4 h-4 rotate-180" />
+                    <span className="hidden sm:inline">Précédent</span>
+                  </button>
+
+                  {/* Page Numbers */}
+                  <div className="flex items-center space-x-1">
+                    {Array.from({ length: totalPages }, (_, index) => {
+                      const page = index + 1;
+                      const isCurrentPage = page === currentPage;
+                      const isNearCurrent = Math.abs(page - currentPage) <= 1;
+                      const isFirstOrLast = page === 1 || page === totalPages;
+                      
+                      if (isCurrentPage || isNearCurrent || isFirstOrLast) {
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => goToPage(page)}
+                            className={`w-10 h-10 rounded-xl font-medium transition-all duration-300 ${
+                              isCurrentPage
+                                ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white shadow-lg'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      } else if (page === 2 && currentPage > 3) {
+                        return <span key={page} className="px-2 text-gray-400">...</span>;
+                      } else if (page === totalPages - 1 && currentPage < totalPages - 2) {
+                        return <span key={page} className="px-2 text-gray-400">...</span>;
+                      }
+                      return null;
+                    })}
+                  </div>
+
+                  {/* Next Button */}
+                  <button
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                      currentPage === totalPages
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                    }`}
+                  >
+                    <span className="hidden sm:inline">Suivant</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Page Info */}
+            {filteredProperties.length > 0 && (
+              <div className="mt-4 text-center text-sm text-gray-600">
+                Affichage de {startIndex + 1} à {Math.min(endIndex, filteredProperties.length)} sur {filteredProperties.length} propriétés
+              </div>
+            )}
           </>
         )}
 
