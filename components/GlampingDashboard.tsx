@@ -1109,78 +1109,76 @@ export default function GlampingDashboard() {
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-100">
-                  {filteredBookings.map((booking) => (
-                    <div key={booking.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
-                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-                        {/* Property and Booking Information */}
-                        <div className="space-y-4">
-                          {/* Property Header with Image and Status */}
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0">
-                              {/* Property Information with Image */}
-                              {booking.property_name && (
-                                <div className="flex items-start gap-3 mb-4">
-                                  {/* Property Image */}
-                                  {booking.property_images && booking.property_images.length > 0 ? (
-                                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-gray-200 flex-shrink-0 shadow-sm">
-                                      <img 
-                                        src={booking.property_images[0]} 
-                                        alt={booking.property_name}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    </div>
-                                  ) : (
-                                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 border-2 border-gray-200 flex-shrink-0 flex items-center justify-center shadow-sm">
-                                      <Home className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
-                                    </div>
-                                  )}
-                                  
-                                  {/* Property Details */}
-                                  <div className="flex-1 min-w-0">
-                                    <h4 className="text-lg sm:text-xl font-bold text-[#4A7C59] mb-2 line-clamp-2">
-                                      {booking.property_name}
-                                    </h4>
-                                    {booking.property_location && (
-                                      <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600 mb-2">
-                                        <MapPin className="w-4 h-4 flex-shrink-0" />
-                                        <span className="line-clamp-1">{booking.property_location}</span>
-                                      </div>
-                                    )}
+                <div className="p-4 sm:p-6">
+                  {/* Multi-column grid for large screens */}
+                  <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4 sm:gap-6">
+                    {filteredBookings.map((booking) => (
+                      <div key={booking.id} className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300 p-4 sm:p-6">
+                        {/* Property Header with Image and Status */}
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex-1 min-w-0">
+                            {/* Property Information with Image */}
+                            {booking.property_name && (
+                              <div className="flex items-start gap-3 mb-4">
+                                {/* Property Image */}
+                                {booking.property_images && booking.property_images.length > 0 ? (
+                                  <div className="w-16 h-16 sm:w-20 sm:h-20 2xl:w-24 2xl:h-24 rounded-xl overflow-hidden border-2 border-gray-200 flex-shrink-0 shadow-sm">
+                                    <img 
+                                      src={booking.property_images[0]} 
+                                      alt={booking.property_name}
+                                      className="w-full h-full object-cover"
+                                    />
                                   </div>
-                                </div>
-                              )}
-
-                              {/* Booking Details */}
-                              <div className="space-y-3">
-                                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
-                                  <Calendar className="w-4 h-4 flex-shrink-0" />
-                                  <span>{formatDate(booking.check_in_date)} - {formatDate(booking.check_out_date)}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
-                                  <Users className="w-4 h-4 flex-shrink-0" />
-                                  <span>{booking.guest_count} invités</span>
-                                </div>
-                                {booking.special_requests && (
-                                  <div className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                                    <span className="font-medium text-gray-700">Demandes spéciales:</span> 
-                                    <span className="ml-2">{booking.special_requests}</span>
+                                ) : (
+                                  <div className="w-16 h-16 sm:w-20 sm:h-20 2xl:w-24 2xl:h-24 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 border-2 border-gray-200 flex-shrink-0 flex items-center justify-center shadow-sm">
+                                    <Home className="w-6 h-6 sm:w-8 sm:h-8 2xl:w-10 2xl:h-10 text-gray-400" />
                                   </div>
                                 )}
+                                
+                                {/* Property Details */}
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-lg sm:text-xl 2xl:text-2xl font-bold text-[#4A7C59] mb-2 line-clamp-2">
+                                    {booking.property_name}
+                                  </h4>
+                                  {booking.property_location && (
+                                    <div className="flex items-center gap-2 text-sm sm:text-base 2xl:text-lg text-gray-600 mb-2">
+                                      <MapPin className="w-4 h-4 flex-shrink-0" />
+                                      <span className="line-clamp-1">{booking.property_location}</span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            </div>
+                            )}
 
-                            {/* Status Badge */}
-                            <div className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-medium capitalize flex-shrink-0 ${getStatusColor(booking.status)}`}>
-                              {getStatusIcon(booking.status)}
-                              <span className="hidden sm:inline">{getStatusText(booking.status)}</span>
-                              <span className="sm:hidden">{getStatusText(booking.status).charAt(0)}</span>
+                            {/* Booking Details */}
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 text-sm sm:text-base 2xl:text-lg text-gray-600">
+                                <Calendar className="w-4 h-4 flex-shrink-0" />
+                                <span>{formatDate(booking.check_in_date)} - {formatDate(booking.check_out_date)}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm sm:text-base 2xl:text-lg text-gray-600">
+                                <Users className="w-4 h-4 flex-shrink-0" />
+                                <span>{booking.guest_count} invités</span>
+                              </div>
+                              {booking.special_requests && (
+                                <div className="text-sm 2xl:text-base text-gray-600 bg-gray-50 rounded-lg p-3">
+                                  <span className="font-medium text-gray-700">Demandes spéciales:</span> 
+                                  <span className="ml-2">{booking.special_requests}</span>
+                                </div>
+                              )}
                             </div>
+                          </div>
+
+                          {/* Status Badge */}
+                          <div className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-medium capitalize flex-shrink-0 ${getStatusColor(booking.status)}`}>
+                            {getStatusIcon(booking.status)}
+                            <span className="hidden sm:inline">{getStatusText(booking.status)}</span>
+                            <span className="sm:hidden">{getStatusText(booking.status).charAt(0)}</span>
                           </div>
                         </div>
 
-                        {/* Client Information and Actions */}
-                        <div className="space-y-4">
+                        {/* Client Information and Actions - Side by side on large screens */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                           {/* Client Information */}
                           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
                             <h5 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -1212,10 +1210,10 @@ export default function GlampingDashboard() {
                               <span className="text-sm sm:text-base">Prix et Actions</span>
                             </h5>
                             <div className="text-center mb-4">
-                              <div className="text-xl sm:text-2xl font-bold text-[#4A7C59] mb-2">
+                              <div className="text-xl sm:text-2xl 2xl:text-3xl font-bold text-[#4A7C59] mb-2">
                                 {formatPrice(booking.total_price)}
                               </div>
-                              <div className="text-xs text-gray-500">
+                              <div className="text-xs 2xl:text-sm text-gray-500">
                                 Réservé le {formatDate(booking.created_at)}
                               </div>
                             </div>
@@ -1294,8 +1292,8 @@ export default function GlampingDashboard() {
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
