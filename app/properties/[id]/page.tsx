@@ -198,7 +198,30 @@ export default function PropertyDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      {/* Navigation Bar with Return Button */}
+      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Retour</span>
+            </button>
+            <div className="flex items-center space-x-4">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#2C3E37] to-[#4A7C59] rounded-full flex items-center justify-center">
+                <MapPin className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-lg font-bold text-[#2C3E37]">AtypikHouse</span>
+            </div>
+            <div className="w-20"></div> {/* Spacer for centering */}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Image Gallery - Modern card design for small screens */}
         <div className="mb-6 sm:mb-8">
           {property.images && property.images.length > 0 ? (
