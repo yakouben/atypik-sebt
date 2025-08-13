@@ -330,7 +330,7 @@ export default function GlampingGuestExperience() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-[#2C3E37]">
-                  Espace Client
+                  Espace Client {/* Auto-deploy test */}
                 </h1>
             </div>
               </div>
