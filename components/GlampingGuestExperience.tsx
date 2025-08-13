@@ -116,15 +116,16 @@ export default function GlampingGuestExperience() {
     setPropertiesLoading(true);
     try {
       const url = selectedCategory === 'all' 
-        ? '/api/properties?published=true&available=true' 
-        : `/api/properties?category=${selectedCategory}&published=true&available=true`;
+        ? '/api/properties?published=true' 
+        : `/api/properties?category=${selectedCategory}&published=true`;
       
+      console.log('Loading properties from:', url);
       const response = await fetch(url);
       const result = await response.json();
       
       if (response.ok && result.data) {
+        console.log('Properties loaded:', result.data.length, 'properties');
         setProperties(result.data);
-        // Remove console.log for better performance
       } else {
         console.error('Error loading properties:', result.error);
         setProperties([]);
@@ -513,6 +514,16 @@ export default function GlampingGuestExperience() {
             
             {/* Properties Grid */}
             <div>
+              {/* Debug Info */}
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Debug:</strong> Total properties loaded: {properties.length} | 
+                  Filtered: {filteredProperties.length} | 
+                  Current page: {currentPage} | 
+                  Properties per page: {propertiesPerPage}
+                </p>
+              </div>
+
               {propertiesLoading ? (
                 <div className="flex items-center justify-center h-64">
                   <div className="text-center">
