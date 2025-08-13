@@ -1123,16 +1123,36 @@ export default function GlampingDashboard() {
                               {/* Property Name Display */}
                               {booking.property_name && (
                                 <div className="mb-3">
-                                  <div className="flex items-center gap-2 text-lg font-semibold text-[#4A7C59]">
-                                    <Home className="w-5 h-5" />
-                                    {booking.property_name}
-                                  </div>
-                                  {booking.property_location && (
-                                    <div className="flex items-center gap-2 text-sm text-gray-600 ml-7">
-                                      <MapPin className="w-4 h-4" />
-                                      {booking.property_location}
+                                  <div className="flex items-center gap-3">
+                                    {/* Property Image */}
+                                    {booking.property_images && booking.property_images.length > 0 ? (
+                                      <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-gray-200 flex-shrink-0">
+                                        <img 
+                                          src={booking.property_images[0]} 
+                                          alt={booking.property_name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 border-2 border-gray-200 flex-shrink-0 flex items-center justify-center">
+                                        <Home className="w-6 h-6 text-gray-400" />
+                                      </div>
+                                    )}
+                                    
+                                    {/* Property Info */}
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 text-lg font-semibold text-[#4A7C59]">
+                                        <Home className="w-5 h-5" />
+                                        {booking.property_name}
+                                      </div>
+                                      {booking.property_location && (
+                                        <div className="flex items-center gap-2 text-sm text-gray-600 ml-7">
+                                          <MapPin className="w-4 h-4" />
+                                          {booking.property_location}
+                                        </div>
+                                      )}
                                     </div>
-                                  )}
+                                  </div>
                                 </div>
                               )}
                               <div className="space-y-2">
