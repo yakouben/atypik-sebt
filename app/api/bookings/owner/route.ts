@@ -74,22 +74,13 @@ export async function GET(request: NextRequest) {
 
     console.log('🔍 Raw bookings data:', bookings);
 
-    // Transform the data - use stored property data from booking record
+    // Transform the data - only client and booking data, no property data
     const transformedBookings = bookings?.map((booking) => {
       console.log('🔍 Processing booking:', booking.id);
       
-      // Use stored property data from the booking record
-      const propertyData = {
-        id: 'stored',
-        name: booking.property_name || 'Propriété supprimée',
-        location: booking.property_location || 'Localisation inconnue',
-        images: booking.property_images || [],
-        price_per_night: booking.property_price_per_night || 0
-      };
-      
       const clientData = booking.profiles || {};
       
-      console.log('🔍 Using stored property data:', propertyData);
+      console.log('🔍 Using only client and booking data');
       
       return {
         id: booking.id,
@@ -104,7 +95,7 @@ export async function GET(request: NextRequest) {
         travel_type: booking.travel_type,
         created_at: booking.created_at,
         updated_at: booking.updated_at,
-        property: propertyData,
+        // No property data - only client and booking info
         client: {
           id: clientData.id || 'unknown',
           full_name: clientData.full_name || 'Client inconnu',

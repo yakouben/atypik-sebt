@@ -188,15 +188,13 @@ export default function GlampingDashboard() {
     if (bookingSearchQuery) {
       const query = bookingSearchQuery.toLowerCase();
       filtered = filtered.filter(booking => 
-        // Search in live property data
-        (booking.property?.name && booking.property.name.toLowerCase().includes(query)) ||
-        (booking.property?.location && booking.property.location.toLowerCase().includes(query)) ||
-        // Search in stored property data (for deleted properties)
-        (booking.property_name && booking.property_name.toLowerCase().includes(query)) ||
-        (booking.property_location && booking.property_location.toLowerCase().includes(query)) ||
-        // Search in client information
+        // Search in client information only
         booking.full_name.toLowerCase().includes(query) ||
-        booking.email_or_phone.toLowerCase().includes(query)
+        booking.email_or_phone.toLowerCase().includes(query) ||
+        // Search in travel type
+        (booking.travel_type && booking.travel_type.toLowerCase().includes(query)) ||
+        // Search in special requests
+        (booking.special_requests && booking.special_requests.toLowerCase().includes(query))
       );
     }
 
@@ -1051,24 +1049,8 @@ export default function GlampingDashboard() {
               </div>
             </div>
 
-            {/* Info Message about Deleted Properties */}
-            {bookings.some(booking => !booking.property) && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                <div className="flex items-start space-x-3">
-                  <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <h3 className="text-sm font-medium text-blue-800 mb-1">
-                      Réservations avec propriétés supprimées
-                    </h3>
-                    <p className="text-sm text-blue-700">
-                      Certaines réservations concernent des propriétés qui ont été supprimées. 
-                      Les nouvelles réservations conservent automatiquement les informations de propriété.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
+            {/* Info Message - Removed property deletion message */}
+            
             {/* Enhanced Filters and Search */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
@@ -1077,7 +1059,7 @@ export default function GlampingDashboard() {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
                       type="text"
-                      placeholder="Rechercher par nom de propriété, localisation, client..."
+                      placeholder="Rechercher par nom client, email, type de voyage..."
                       value={bookingSearchQuery}
                       onChange={(e) => setBookingSearchQuery(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -1127,41 +1109,29 @@ export default function GlampingDashboard() {
                 <div className="divide-y divide-gray-100">
                   {filteredBookings.map((booking) => (
                     <div key={booking.id} className="p-6 hover:bg-gray-50 transition-colors">
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Property Information */}
-                        <div className="space-y-3">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Client and Booking Information */}
+                        <div className="space-y-4">
                           <div className="flex items-start justify-between">
                             <div>
-                              <h4 className="text-xl font-bold text-gray-900 mb-1">
-                                {booking.property ? (
-                                  <div className="flex items-center gap-2">
-                                    {booking.property.name}
-                                    {booking.property.id === 'stored' && (
-                                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                                        Données sauvegardées
-                                      </span>
-                                    )}
-                                  </div>
-                                ) : (
-                                  <span className="text-red-600 flex items-center gap-2">
-                                    <AlertCircle className="w-5 h-5" />
-                                    Propriété supprimée
-                                  </span>
-                                )}
+                              <h4 className="text-xl font-bold text-gray-900 mb-2">
+                                Réservation #{booking.id.slice(-8)}
                               </h4>
-                              <p className="text-gray-600 flex items-center gap-2">
-                                <MapPin className="w-4 h-4" />
-                                {booking.property ? (
-                                  booking.property.location
-                                ) : (
-                                  <span className="text-gray-500">Localisation inconnue</span>
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>{formatDate(booking.check_in_date)} - {formatDate(booking.check_out_date)}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                  <Users className="w-4 h-4" />
+                                  <span>{booking.guest_count} invités</span>
+                                </div>
+                                {booking.special_requests && (
+                                  <div className="text-sm text-gray-600">
+                                    <span className="font-medium">Demandes spéciales:</span> {booking.special_requests}
+                                  </div>
                                 )}
-                              </p>
-                              {!booking.property && (
-                                <p className="text-sm text-gray-500 mt-1">
-                                  Cette propriété a été supprimée mais la réservation est conservée
-                                </p>
-                              )}
+                              </div>
                             </div>
                             <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusColor(booking.status)}`}>
                               {getStatusIcon(booking.status)}
@@ -1170,49 +1140,11 @@ export default function GlampingDashboard() {
                               </span>
                             </div>
                           </div>
-
-                          {/* Property Image */}
-                          {booking.property?.images && booking.property.images.length > 0 ? (
-                            <div className="w-full h-32 rounded-lg overflow-hidden">
-                              <img
-                                src={booking.property.images[0]}
-                                alt={booking.property.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-full h-32 rounded-lg bg-gray-100 flex items-center justify-center">
-                              {booking.property ? (
-                                <Camera className="w-8 h-8 text-gray-400" />
-                              ) : (
-                                <div className="text-center text-gray-500">
-                                  <AlertCircle className="w-8 h-8 mx-auto mb-2" />
-                                  <p className="text-sm">Propriété supprimée</p>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Dates and Guests */}
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Calendar className="w-4 h-4" />
-                              <span>{formatDate(booking.check_in_date)} - {formatDate(booking.check_out_date)}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Users className="w-4 h-4" />
-                              <span>{booking.guest_count} invités</span>
-                            </div>
-                            {booking.special_requests && (
-                              <div className="text-sm text-gray-600">
-                                <span className="font-medium">Demandes spéciales:</span> {booking.special_requests}
-                              </div>
-                            )}
-                          </div>
                         </div>
 
-                        {/* Client Information */}
-                        <div className="space-y-3">
+                        {/* Client Information and Actions */}
+                        <div className="space-y-4">
+                          {/* Client Information */}
                           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
                             <h5 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                               <User className="w-5 h-5 text-blue-600" />
@@ -1233,31 +1165,13 @@ export default function GlampingDashboard() {
                             </div>
                           </div>
 
-                          {/* Booking Details */}
-                          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4">
-                            <h5 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                              <Calendar className="w-5 h-5 text-green-600" />
-                              Détails de la Réservation
-                            </h5>
-                            <div className="space-y-2 text-sm">
-                              <div>
-                                <span className="font-medium text-gray-700">Créée le:</span> {formatDate(booking.created_at)}
-                              </div>
-                              <div>
-                                <span className="font-medium text-gray-700">Prix total:</span> {formatPrice(booking.total_price)}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Actions and Price */}
-                        <div className="space-y-3">
+                          {/* Price and Actions */}
                           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4">
                             <h5 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                               <Euro className="w-5 h-5 text-green-600" />
-                              Prix
+                              Prix et Actions
                             </h5>
-                            <div className="text-center">
+                            <div className="text-center mb-4">
                               <div className="text-2xl font-bold text-[#4A7C59] mb-2">
                                 {formatPrice(booking.total_price)}
                               </div>
@@ -1265,74 +1179,74 @@ export default function GlampingDashboard() {
                                 Réservé le {formatDate(booking.created_at)}
                               </div>
                             </div>
-                          </div>
 
-                          {/* Action Buttons */}
-                          <div className="space-y-2">
-                            {booking.status === 'pending' && (
-                              <>
+                            {/* Action Buttons */}
+                            <div className="space-y-2">
+                              {booking.status === 'pending' && (
+                                <>
+                                  <button
+                                    onClick={() => handleStatusUpdate(booking.id, 'confirmed')}
+                                    disabled={updatingBooking === booking.id}
+                                    className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-green-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                                  >
+                                    {updatingBooking === booking.id ? (
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    ) : (
+                                      <>
+                                        <CheckCircle2 className="w-4 h-4" />
+                                        Confirmer
+                                      </>
+                                    )}
+                                  </button>
+                                  <button
+                                    onClick={() => handleStatusUpdate(booking.id, 'cancelled')}
+                                    disabled={updatingBooking === booking.id}
+                                    className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                                  >
+                                    {updatingBooking === booking.id ? (
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    ) : (
+                                      <>
+                                        <Ban className="w-4 h-4" />
+                                        Refuser
+                                      </>
+                                    )}
+                                  </button>
+                                </>
+                              )}
+                              
+                              {booking.status === 'confirmed' && (
                                 <button
-                                  onClick={() => handleStatusUpdate(booking.id, 'confirmed')}
+                                  onClick={() => handleStatusUpdate(booking.id, 'completed')}
                                   disabled={updatingBooking === booking.id}
-                                  className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-green-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-blue-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
                                 >
                                   {updatingBooking === booking.id ? (
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                                   ) : (
                                     <>
-                                      <CheckCircle2 className="w-4 h-4" />
-                                      Confirmer
+                                      <CheckCircle className="w-4 h-4" />
+                                      Marquer comme terminée
                                     </>
                                   )}
                                 </button>
-                                <button
-                                  onClick={() => handleStatusUpdate(booking.id, 'cancelled')}
-                                  disabled={updatingBooking === booking.id}
-                                  className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
-                                >
-                                  {updatingBooking === booking.id ? (
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                  ) : (
-                                    <>
-                                      <Ban className="w-4 h-4" />
-                                      Refuser
-                                    </>
-                                  )}
-                                </button>
-                              </>
-                            )}
-                            
-                            {booking.status === 'confirmed' && (
+                              )}
+
                               <button
-                                onClick={() => handleStatusUpdate(booking.id, 'completed')}
-                                disabled={updatingBooking === booking.id}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-blue-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                                onClick={() => handleDeleteBooking(booking.id)}
+                                disabled={deletingBooking === booking.id}
+                                className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-gray-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
                               >
-                                {updatingBooking === booking.id ? (
+                                {deletingBooking === booking.id ? (
                                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                                 ) : (
                                   <>
-                                    <CheckCircle className="w-4 h-4" />
-                                    Marquer comme terminée
+                                    <Trash2 className="w-4 h-4" />
+                                    Supprimer
                                   </>
                                 )}
                               </button>
-                            )}
-
-                            <button
-                              onClick={() => handleDeleteBooking(booking.id)}
-                              disabled={deletingBooking === booking.id}
-                              className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-gray-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
-                            >
-                              {deletingBooking === booking.id ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                              ) : (
-                                <>
-                                  <Trash2 className="w-4 h-4" />
-                                  Supprimer
-                                </>
-                              )}
-                            </button>
+                            </div>
                           </div>
                         </div>
                       </div>
