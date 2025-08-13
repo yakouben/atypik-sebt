@@ -119,6 +119,16 @@ export default function GlampingDashboard() {
   const [deletingBooking, setDeletingBooking] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [bookingSuccessMessage, setBookingSuccessMessage] = useState<string>('');
+  const [showBookingSuccessMessage, setShowBookingSuccessMessage] = useState(false);
+  const [stats, setStats] = useState({
+    total: 0,
+    pending: 0,
+    confirmed: 0,
+    completed: 0,
+    cancelled: 0,
+    revenue: 0
+  });
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -274,8 +284,61 @@ export default function GlampingDashboard() {
 
   const handleStatusUpdate = async (reservationId: string, newStatus: string) => {
     try {
+      // Immediate visual feedback - update UI instantly
       setUpdatingBooking(reservationId);
       
+      // Optimistically update the local state immediately
+      setBookings(prevBookings => 
+        prevBookings.map(booking => 
+          booking.id === reservationId 
+            ? { ...booking, status: newStatus as any }
+            : booking
+        )
+      );
+      
+      // Also update filtered bookings immediately
+      setFilteredBookings(prevFiltered => 
+        prevFiltered.map(booking => 
+          booking.id === reservationId 
+            ? { ...booking, status: newStatus as any }
+            : booking
+        )
+      );
+      
+      // Update stats immediately
+      const newStats = {
+        total: stats.total,
+        pending: newStatus === 'pending' ? stats.pending + 1 : 
+                 newStatus === 'confirmed' || newStatus === 'cancelled' ? stats.pending - 1 : stats.pending,
+        confirmed: newStatus === 'confirmed' ? stats.confirmed + 1 : 
+                   newStatus === 'pending' || newStatus === 'completed' ? stats.confirmed - 1 : stats.confirmed,
+        completed: newStatus === 'completed' ? stats.completed + 1 : 
+                   newStatus === 'confirmed' ? stats.completed - 1 : stats.completed,
+        cancelled: newStatus === 'cancelled' ? stats.cancelled + 1 : 
+                   newStatus === 'pending' ? stats.cancelled - 1 : stats.cancelled,
+        revenue: stats.revenue
+      };
+      
+      // Update stats state
+      const updateStats = () => {
+        if (newStatus === 'confirmed') {
+          const booking = bookings.find(b => b.id === reservationId);
+          if (booking) {
+            newStats.revenue += booking.total_price;
+          }
+        } else if (newStatus === 'cancelled') {
+          const booking = bookings.find(b => b.id === reservationId);
+          if (booking && booking.status === 'confirmed') {
+            newStats.revenue -= booking.total_price;
+          }
+        }
+      };
+      updateStats();
+      
+      // Update the stats state
+      setStats(newStats);
+      
+      // API call in background
       const response = await fetch(`/api/bookings/${reservationId}`, {
         method: 'PATCH',
         headers: {
@@ -285,27 +348,67 @@ export default function GlampingDashboard() {
       });
 
       if (response.ok) {
-        // Update the local state
+        // Success - no need to reload, UI is already updated
+        console.log('✅ Reservation updated successfully');
+        
+        // Show success message
+        setBookingSuccessMessage(`Réservation ${newStatus === 'confirmed' ? 'confirmée' : newStatus === 'cancelled' ? 'annulée' : 'mise à jour'} avec succès !`);
+        setShowBookingSuccessMessage(true);
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => setShowBookingSuccessMessage(false), 3000);
+      } else {
+        // Error - revert the optimistic update
+        const errorData = await response.json();
+        console.error('❌ Error updating reservation:', errorData);
+        
+        // Revert the optimistic update
         setBookings(prevBookings => 
           prevBookings.map(booking => 
             booking.id === reservationId 
-              ? { ...booking, status: newStatus as any }
+              ? { ...booking, status: (booking.status === 'pending' ? 'pending' : 
+                                      booking.status === 'confirmed' ? 'confirmed' : 
+                                      booking.status === 'completed' ? 'completed' : 'cancelled') as any }
               : booking
           )
         );
         
-        // Show success message
-        alert(`Réservation ${newStatus === 'confirmed' ? 'confirmée' : newStatus === 'cancelled' ? 'annulée' : 'mise à jour'} avec succès !`);
+        setFilteredBookings(prevFiltered => 
+          prevFiltered.map(booking => 
+            booking.id === reservationId 
+              ? { ...booking, status: (booking.status === 'pending' ? 'pending' : 
+                                      booking.status === 'confirmed' ? 'confirmed' : 
+                                      booking.status === 'completed' ? 'completed' : 'cancelled') as any }
+              : booking
+          )
+        );
         
-        // Refresh the data
-        await loadBookings();
-      } else {
-        const errorData = await response.json();
-        console.error('Error updating booking:', errorData);
         alert(`Erreur lors de la mise à jour: ${errorData.error || 'Erreur inconnue'}`);
       }
     } catch (error) {
-      console.error('Error updating booking status:', error);
+      console.error('❌ Exception updating reservation:', error);
+      
+      // Revert the optimistic update on error
+      setBookings(prevBookings => 
+        prevBookings.map(booking => 
+          booking.id === reservationId 
+            ? { ...booking, status: (booking.status === 'pending' ? 'pending' : 
+                                    booking.status === 'confirmed' ? 'confirmed' : 
+                                    booking.status === 'completed' ? 'completed' : 'cancelled') as any }
+            : booking
+        )
+      );
+      
+      setFilteredBookings(prevFiltered => 
+        prevFiltered.map(booking => 
+          booking.id === reservationId 
+            ? { ...booking, status: (booking.status === 'pending' ? 'pending' : 
+                                    booking.status === 'confirmed' ? 'confirmed' : 
+                                    booking.status === 'completed' ? 'completed' : 'cancelled') as any }
+            : booking
+        )
+      );
+      
       alert('Erreur lors de la mise à jour du statut');
     } finally {
       setUpdatingBooking(null);
@@ -318,30 +421,80 @@ export default function GlampingDashboard() {
     }
 
     try {
+      // Immediate visual feedback
       setDeletingBooking(bookingId);
       
+      // Get the booking details before deletion for stats update
+      const bookingToDelete = bookings.find(b => b.id === bookingId);
+      
+      // Optimistically remove the booking from local state immediately
+      setBookings(prevBookings => 
+        prevBookings.filter(booking => booking.id !== bookingId)
+      );
+      
+      // Also remove from filtered bookings immediately
+      setFilteredBookings(prevFiltered => 
+        prevFiltered.filter(booking => booking.id !== bookingId)
+      );
+      
+      // Update stats immediately
+      if (bookingToDelete) {
+        const newStats = { ...stats };
+        newStats.total -= 1;
+        
+        if (bookingToDelete.status === 'pending') {
+          newStats.pending -= 1;
+        } else if (bookingToDelete.status === 'confirmed') {
+          newStats.confirmed -= 1;
+          newStats.revenue -= bookingToDelete.total_price;
+        } else if (bookingToDelete.status === 'completed') {
+          newStats.completed -= 1;
+          newStats.revenue -= bookingToDelete.total_price;
+        } else if (bookingToDelete.status === 'cancelled') {
+          newStats.cancelled -= 1;
+        }
+        
+        // Update stats state
+        setStats(newStats);
+      }
+      
+      // API call in background
       const response = await fetch(`/api/bookings/${bookingId}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
-        // Remove the booking from local state
-        setBookings(prevBookings => 
-          prevBookings.filter(booking => booking.id !== bookingId)
-        );
+        // Success - no need to reload, UI is already updated
+        console.log('✅ Reservation deleted successfully');
         
         // Show success message
-        alert('Réservation supprimée avec succès !');
+        setBookingSuccessMessage('Réservation supprimée avec succès !');
+        setShowBookingSuccessMessage(true);
         
-        // Refresh the data
-        await loadBookings();
+        // Hide success message after 3 seconds
+        setTimeout(() => setShowBookingSuccessMessage(false), 3000);
       } else {
+        // Error - revert the optimistic update
         const errorData = await response.json();
-        console.error('Error deleting booking:', errorData);
+        console.error('❌ Error deleting reservation:', errorData);
+        
+        // Revert the optimistic update by adding the booking back
+        if (bookingToDelete) {
+          setBookings(prevBookings => [...prevBookings, bookingToDelete]);
+          setFilteredBookings(prevFiltered => [...prevFiltered, bookingToDelete]);
+        }
+        
         alert(`Erreur lors de la suppression: ${errorData.error || 'Erreur inconnue'}`);
       }
     } catch (error) {
-      console.error('Error deleting booking:', error);
+      console.error('❌ Exception deleting reservation:', error);
+      
+      // Revert the optimistic update on error
+      if (bookingToDelete) {
+        setBookings(prevBookings => [...prevBookings, bookingToDelete]);
+        setFilteredBookings(prevFiltered => [...prevFiltered, bookingToDelete]);
+      }
+      
       alert('Erreur lors de la suppression de la réservation');
     } finally {
       setDeletingBooking(null);
@@ -523,6 +676,30 @@ export default function GlampingDashboard() {
               <button
                 onClick={() => setShowSuccessMessage(false)}
                 className="flex-shrink-0 text-green-400 hover:text-green-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Booking Success Message */}
+      {showBookingSuccessMessage && (
+        <div className="fixed top-32 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-lg max-w-md">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-blue-600" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-800">{bookingSuccessMessage}</p>
+              </div>
+              <button
+                onClick={() => setShowBookingSuccessMessage(false)}
+                className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>

@@ -153,6 +153,61 @@ export default function OwnerReservationsPage() {
     try {
       console.log('🔍 Updating reservation:', { reservationId, newStatus });
       
+      // Get the current reservation for stats update
+      const currentReservation = reservations.find(r => r.id === reservationId);
+      
+      // Optimistically update the local state immediately
+      setReservations(prevReservations => 
+        prevReservations.map(reservation => 
+          reservation.id === reservationId 
+            ? { ...reservation, status: newStatus as any }
+            : reservation
+        )
+      );
+      
+      // Also update filtered reservations immediately
+      setFilteredReservations(prevFiltered => 
+        prevFiltered.map(reservation => 
+          reservation.id === reservationId 
+            ? { ...reservation, status: newStatus as any }
+            : reservation
+        )
+      );
+      
+      // Update stats immediately
+      if (currentReservation) {
+        const newStats = { ...stats };
+        
+        // Remove from old status
+        if (currentReservation.status === 'pending') {
+          newStats.pending -= 1;
+        } else if (currentReservation.status === 'confirmed') {
+          newStats.confirmed -= 1;
+          newStats.revenue -= currentReservation.total_price;
+        } else if (currentReservation.status === 'completed') {
+          newStats.completed -= 1;
+          newStats.revenue -= currentReservation.total_price;
+        } else if (currentReservation.status === 'cancelled') {
+          newStats.cancelled -= 1;
+        }
+        
+        // Add to new status
+        if (newStatus === 'pending') {
+          newStats.pending += 1;
+        } else if (newStatus === 'confirmed') {
+          newStats.confirmed += 1;
+          newStats.revenue += currentReservation.total_price;
+        } else if (newStatus === 'completed') {
+          newStats.completed += 1;
+          newStats.revenue += currentReservation.total_price;
+        } else if (newStatus === 'cancelled') {
+          newStats.cancelled += 1;
+        }
+        
+        setStats(newStats);
+      }
+      
+      // API call in background
       const response = await fetch('/api/bookings/owner', {
         method: 'PATCH',
         headers: {
@@ -168,15 +223,62 @@ export default function OwnerReservationsPage() {
 
       if (response.ok) {
         console.log('✅ Reservation updated successfully');
-        // Reload reservations to get updated data
-        await loadReservations();
+        // No need to reload - UI is already updated
       } else {
+        // Error - revert the optimistic update
         const result = await response.json();
         console.error('❌ Error updating reservation:', result);
+        
+        // Revert the optimistic update
+        if (currentReservation) {
+          setReservations(prevReservations => 
+            prevReservations.map(reservation => 
+              reservation.id === reservationId 
+                ? { ...reservation, status: currentReservation.status }
+                : reservation
+            )
+          );
+          
+          setFilteredReservations(prevFiltered => 
+            prevFiltered.map(reservation => 
+              reservation.id === reservationId 
+                ? { ...reservation, status: currentReservation.status }
+                : reservation
+            )
+          );
+          
+          // Revert stats
+          setStats(stats);
+        }
+        
         alert('Error updating reservation: ' + result.error);
       }
     } catch (error) {
       console.error('❌ Exception updating reservation:', error);
+      
+      // Revert the optimistic update on error
+      if (currentReservation) {
+        setReservations(prevReservations => 
+          prevReservations.map(reservation => 
+            reservation.id === reservationId 
+              ? { ...reservation, status: currentReservation.status }
+              : reservation
+            )
+        );
+        
+        setFilteredReservations(prevFiltered => 
+          prevFiltered.map(reservation => 
+            reservation.id === reservationId 
+              ? { ...reservation, status: currentReservation.status }
+              : reservation
+            )
+          );
+        );
+        
+        // Revert stats
+        setStats(stats);
+      }
+      
       alert('Error updating reservation: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
@@ -185,6 +287,40 @@ export default function OwnerReservationsPage() {
     try {
       console.log('🗑️ Deleting reservation:', { reservationId });
       
+      // Get the current reservation for stats update
+      const currentReservation = reservations.find(r => r.id === reservationId);
+      
+      // Optimistically remove the reservation from local state immediately
+      setReservations(prevReservations => 
+        prevReservations.filter(reservation => reservation.id !== reservationId)
+      );
+      
+      // Also remove from filtered reservations immediately
+      setFilteredReservations(prevFiltered => 
+        prevFiltered.filter(reservation => reservation.id !== reservationId)
+      );
+      
+      // Update stats immediately
+      if (currentReservation) {
+        const newStats = { ...stats };
+        newStats.total -= 1;
+        
+        if (currentReservation.status === 'pending') {
+          newStats.pending -= 1;
+        } else if (currentReservation.status === 'confirmed') {
+          newStats.confirmed -= 1;
+          newStats.revenue -= currentReservation.total_price;
+        } else if (currentReservation.status === 'completed') {
+          newStats.completed -= 1;
+          newStats.revenue -= currentReservation.total_price;
+        } else if (currentReservation.status === 'cancelled') {
+          newStats.cancelled -= 1;
+        }
+        
+        setStats(newStats);
+      }
+      
+      // API call in background
       const response = await fetch(`/api/bookings/${reservationId}`, {
         method: 'DELETE',
       });
@@ -193,15 +329,35 @@ export default function OwnerReservationsPage() {
 
       if (response.ok) {
         console.log('✅ Reservation deleted successfully');
-        // Reload reservations to get updated data
-        await loadReservations();
+        // No need to reload - UI is already updated
       } else {
+        // Error - revert the optimistic update
         const result = await response.json();
         console.error('❌ Error deleting reservation:', result);
+        
+        // Revert the optimistic update by adding the reservation back
+        if (currentReservation) {
+          setReservations(prevReservations => [...prevReservations, currentReservation]);
+          setFilteredReservations(prevFiltered => [...prevFiltered, currentReservation]);
+          
+          // Revert stats
+          setStats(stats);
+        }
+        
         alert('Error deleting reservation: ' + result.error);
       }
     } catch (error) {
       console.error('❌ Exception deleting reservation:', error);
+      
+      // Revert the optimistic update on error
+      if (currentReservation) {
+        setReservations(prevReservations => [...prevReservations, currentReservation]);
+        setFilteredReservations(prevFiltered => [...prevFiltered, currentReservation]);
+        
+        // Revert stats
+        setStats(stats);
+      }
+      
       alert('Error deleting reservation: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
