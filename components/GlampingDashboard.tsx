@@ -188,9 +188,12 @@ export default function GlampingDashboard() {
     if (bookingSearchQuery) {
       const query = bookingSearchQuery.toLowerCase();
       filtered = filtered.filter(booking => 
-        // Search in client information only
+        // Search in client information
         booking.full_name.toLowerCase().includes(query) ||
         booking.email_or_phone.toLowerCase().includes(query) ||
+        // Search in property information (stored data)
+        (booking.property_name && booking.property_name.toLowerCase().includes(query)) ||
+        (booking.property_location && booking.property_location.toLowerCase().includes(query)) ||
         // Search in travel type
         (booking.travel_type && booking.travel_type.toLowerCase().includes(query)) ||
         // Search in special requests
@@ -1059,7 +1062,7 @@ export default function GlampingDashboard() {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
                       type="text"
-                      placeholder="Rechercher par nom client, email, type de voyage..."
+                      placeholder="Rechercher par nom de propriété, client, email, type de voyage..."
                       value={bookingSearchQuery}
                       onChange={(e) => setBookingSearchQuery(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -1117,6 +1120,21 @@ export default function GlampingDashboard() {
                               <h4 className="text-xl font-bold text-gray-900 mb-2">
                                 Réservation #{booking.id.slice(-8)}
                               </h4>
+                              {/* Property Name Display */}
+                              {booking.property_name && (
+                                <div className="mb-3">
+                                  <div className="flex items-center gap-2 text-lg font-semibold text-[#4A7C59]">
+                                    <Home className="w-5 h-5" />
+                                    {booking.property_name}
+                                  </div>
+                                  {booking.property_location && (
+                                    <div className="flex items-center gap-2 text-sm text-gray-600 ml-7">
+                                      <MapPin className="w-4 h-4" />
+                                      {booking.property_location}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                               <div className="space-y-2">
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
                                   <Calendar className="w-4 h-4" />
