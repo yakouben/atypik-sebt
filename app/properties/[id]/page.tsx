@@ -14,7 +14,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
-  X
+  X,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -217,6 +218,26 @@ export default function PropertyDetailPage() {
                     {/* Gradient overlay for better text readability */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                     
+                    {/* Left Arrow Navigation */}
+                    {property.images.length > 1 && (
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300"
+                      >
+                        <ArrowLeft className="w-5 h-5 text-[#333333]" />
+                      </button>
+                    )}
+                    
+                    {/* Right Arrow Navigation */}
+                    {property.images.length > 1 && (
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300"
+                      >
+                        <ChevronRight className="w-5 h-5 text-[#333333]" />
+                      </button>
+                    )}
+                    
                     {/* Image counter */}
                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
                       {selectedImage + 1} / {property.images.length}
@@ -278,6 +299,26 @@ export default function PropertyDetailPage() {
                     
                     {/* Gradient overlay for better text readability */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+                    
+                    {/* Left Arrow Navigation */}
+                    {property.images.length > 1 && (
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300"
+                      >
+                        <ArrowLeft className="w-5 h-5 text-[#333333]" />
+                      </button>
+                    )}
+                    
+                    {/* Right Arrow Navigation */}
+                    {property.images.length > 1 && (
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300"
+                      >
+                        <ChevronRight className="w-5 h-5 text-[#333333]" />
+                      </button>
+                    )}
                     
                     {/* Image counter */}
                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
