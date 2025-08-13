@@ -26,7 +26,8 @@ import {
   AlertCircle,
   Eye,
   Filter,
-  Search
+  Search,
+  RefreshCw
 } from 'lucide-react';
 import { useAuthContext } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
@@ -110,6 +111,17 @@ export default function GlampingGuestExperience() {
   useEffect(() => {
     filterBookings();
   }, [bookings, selectedStatus, searchQuery]);
+
+  // Auto-refresh bookings every 30 seconds to get real-time status updates
+  useEffect(() => {
+    if (userProfile?.id) {
+      const interval = setInterval(() => {
+        loadBookings();
+      }, 30000); // Refresh every 30 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [userProfile]);
 
   const loadProperties = async () => {
     // Don't block the entire UI for property loading
@@ -531,7 +543,7 @@ export default function GlampingGuestExperience() {
                   </p>
                 </div>
               ) : (
-                <div className={`grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`}>
+                <div className={`grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`}>
                   {currentProperties.map((property) => (
                     <div 
                       key={property.id} 
@@ -763,6 +775,13 @@ export default function GlampingGuestExperience() {
                 <h2 className="text-2xl font-bold text-gray-900">Historique des réservations</h2>
                 <p className="text-gray-600 mt-1">Gérez et suivez toutes vos réservations</p>
               </div>
+              <button 
+                onClick={loadBookings}
+                className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Actualiser
+              </button>
             </div>
 
             {/* Enhanced Filters and Search */}
