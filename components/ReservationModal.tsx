@@ -54,9 +54,10 @@ interface ReservationModalProps {
   onClose: () => void;
   propertyId: string;
   propertyName?: string;
+  onReservationUpdate?: () => void; // Callback to notify parent of updates
 }
 
-export default function ReservationModal({ isOpen, onClose, propertyId, propertyName }: ReservationModalProps) {
+export default function ReservationModal({ isOpen, onClose, propertyId, propertyName, onReservationUpdate }: ReservationModalProps) {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -175,6 +176,11 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
         // Show success message
         showSuccessMessage(`Réservation ${newStatus === 'confirmed' ? 'confirmée' : newStatus === 'cancelled' ? 'annulée' : 'mise à jour'} avec succès !`);
         
+        // Notify parent component of the update
+        if (onReservationUpdate) {
+          onReservationUpdate();
+        }
+        
         // Refresh the data from server to ensure consistency
         await loadReservations();
       } else {
@@ -237,6 +243,11 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
         
         // Show success message
         showSuccessMessage('Réservation supprimée avec succès !');
+        
+        // Notify parent component of the update
+        if (onReservationUpdate) {
+          onReservationUpdate();
+        }
         
         // Refresh the data from server to ensure consistency
         await loadReservations();

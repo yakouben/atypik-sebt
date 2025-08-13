@@ -1365,6 +1365,7 @@ export default function GlampingDashboard() {
           onClose={handleCloseReservationModal}
           propertyId={selectedPropertyId}
           propertyName={selectedPropertyName}
+          onReservationUpdate={loadData}
         />
       )}
     </div>

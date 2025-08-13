@@ -22,11 +22,13 @@ import {
   Mail,
   CalendarDays,
   ArrowLeft,
-  ChevronDown
+  ChevronDown,
+  X
 } from 'lucide-react';
 import { useAuthContext } from './AuthProvider';
 import { useRouter } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { Trash2 } from 'lucide-react';
 
 interface Reservation {
   id: string;
@@ -176,6 +178,31 @@ export default function OwnerReservationsPage() {
     } catch (error) {
       console.error('❌ Exception updating reservation:', error);
       alert('Error updating reservation: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
+  };
+
+  const handleDeleteReservation = async (reservationId: string) => {
+    try {
+      console.log('🗑️ Deleting reservation:', { reservationId });
+      
+      const response = await fetch(`/api/bookings/${reservationId}`, {
+        method: 'DELETE',
+      });
+
+      console.log('🗑️ Delete response status:', response.status);
+
+      if (response.ok) {
+        console.log('✅ Reservation deleted successfully');
+        // Reload reservations to get updated data
+        await loadReservations();
+      } else {
+        const result = await response.json();
+        console.error('❌ Error deleting reservation:', result);
+        alert('Error deleting reservation: ' + result.error);
+      }
+    } catch (error) {
+      console.error('❌ Exception deleting reservation:', error);
+      alert('Error deleting reservation: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
@@ -538,6 +565,180 @@ export default function OwnerReservationsPage() {
           )}
         </div>
       </div>
+
+      {/* Reservation Detail Modal */}
+      {showReservationModal && selectedReservation && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden relative">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Détails de la réservation
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  {selectedReservation.property?.name || 'Propriété inconnue'}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowReservationModal(false)}
+                className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+              {/* Client Info */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Informations client</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-10 h-10 bg-[#2C3E37] rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{selectedReservation.full_name}</p>
+                      <p className="text-sm text-gray-600">{selectedReservation.email_or_phone}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-600">Type de voyage:</span>
+                      <span className="ml-2 font-medium capitalize">{selectedReservation.travel_type}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Créé le:</span>
+                      <span className="ml-2 font-medium">{formatDate(selectedReservation.created_at)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Reservation Details */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Détails de la réservation</h3>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <CalendarDays className="w-4 h-4 text-gray-400" />
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {formatDate(selectedReservation.check_in_date)} - {formatDate(selectedReservation.check_out_date)}
+                        </p>
+                        <p className="text-xs text-gray-600">Période de séjour</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Users className="w-4 h-4 text-gray-400" />
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {selectedReservation.guest_count} {selectedReservation.guest_count > 1 ? 'personnes' : 'personne'}
+                        </p>
+                        <p className="text-xs text-gray-600">Nombre de personnes</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Euro className="w-4 h-4 text-gray-400" />
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {formatPrice(selectedReservation.total_price)}
+                        </p>
+                        <p className="text-xs text-gray-600">Prix total</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="w-4 h-4 text-gray-400" />
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {selectedReservation.property?.name || 'Propriété inconnue'}
+                        </p>
+                        <p className="text-xs text-gray-600">Propriété</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Special Requests */}
+              {selectedReservation.special_requests && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Demandes spéciales</h3>
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <p className="text-blue-800">{selectedReservation.special_requests}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
+                <div className="flex flex-wrap gap-3">
+                  {selectedReservation.status === 'pending' && (
+                    <>
+                      <button
+                        onClick={() => {
+                          handleStatusUpdate(selectedReservation.id, 'confirmed');
+                          setShowReservationModal(false);
+                        }}
+                        className="px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-green-600/25"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <CheckCircle className="w-5 h-5" />
+                          <span>Confirmer</span>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleStatusUpdate(selectedReservation.id, 'cancelled');
+                          setShowReservationModal(false);
+                        }}
+                        className="px-6 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-600/25"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <XCircle className="w-5 h-5" />
+                          <span>Refuser</span>
+                        </div>
+                      </button>
+                    </>
+                  )}
+                  
+                  {selectedReservation.status === 'confirmed' && (
+                    <button
+                      onClick={() => {
+                        handleStatusUpdate(selectedReservation.id, 'completed');
+                        setShowReservationModal(false);
+                      }}
+                      className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-blue-600/25"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <CheckCircle className="w-5 h-5" />
+                        <span>Marquer comme terminée</span>
+                      </div>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      if (confirm('Êtes-vous sûr de vouloir supprimer cette réservation ? Cette action est irréversible.')) {
+                        handleDeleteReservation(selectedReservation.id);
+                        setShowReservationModal(false);
+                      }
+                    }}
+                    className="px-6 py-3 bg-gray-600 text-white rounded-xl font-medium hover:bg-gray-700 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-gray-600/25"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Trash2 className="w-5 h-5" />
+                      <span>Supprimer</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
