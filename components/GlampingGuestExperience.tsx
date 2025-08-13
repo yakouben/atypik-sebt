@@ -119,12 +119,10 @@ export default function GlampingGuestExperience() {
         ? '/api/properties?published=true' 
         : `/api/properties?category=${selectedCategory}&published=true`;
       
-      console.log('Loading properties from:', url);
       const response = await fetch(url);
       const result = await response.json();
       
       if (response.ok && result.data) {
-        console.log('Properties loaded:', result.data.length, 'properties');
         setProperties(result.data);
       } else {
         console.error('Error loading properties:', result.error);
@@ -514,16 +512,6 @@ export default function GlampingGuestExperience() {
             
             {/* Properties Grid */}
             <div>
-              {/* Debug Info */}
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Debug:</strong> Total properties loaded: {properties.length} | 
-                  Filtered: {filteredProperties.length} | 
-                  Current page: {currentPage} | 
-                  Properties per page: {propertiesPerPage}
-                </p>
-              </div>
-
               {propertiesLoading ? (
                 <div className="flex items-center justify-center h-64">
                   <div className="text-center">
@@ -543,7 +531,7 @@ export default function GlampingGuestExperience() {
                   </p>
                 </div>
               ) : (
-                <div className={`grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`}>
+                <div className={`grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`}>
                   {currentProperties.map((property) => (
                     <div 
                       key={property.id} 
