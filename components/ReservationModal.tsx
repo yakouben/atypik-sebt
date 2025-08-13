@@ -16,10 +16,7 @@ import {
   XCircle,
   Loader2,
   Filter,
-  ChevronDown,
-  CheckCircle2,
-  Ban,
-  Trash2
+  ChevronDown
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -54,19 +51,14 @@ interface ReservationModalProps {
   onClose: () => void;
   propertyId: string;
   propertyName?: string;
-  onReservationUpdate?: () => void; // Callback to notify parent of updates
 }
 
-export default function ReservationModal({ isOpen, onClose, propertyId, propertyName, onReservationUpdate }: ReservationModalProps) {
+export default function ReservationModal({ isOpen, onClose, propertyId, propertyName }: ReservationModalProps) {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [updatingBooking, setUpdatingBooking] = useState<string | null>(null);
-  const [deletingBooking, setDeletingBooking] = useState<string | null>(null);
-  const [statusChangeFeedback, setStatusChangeFeedback] = useState<{[key: string]: string}>({});
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     console.log('🔍 ReservationModal useEffect:', { isOpen, propertyId });
@@ -113,154 +105,6 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
       setFilteredReservations(reservations);
     } else {
       setFilteredReservations(reservations.filter(reservation => reservation.status === selectedStatus));
-    }
-  };
-
-  const showSuccessMessage = (message: string) => {
-    setSuccessMessage(message);
-    setTimeout(() => setSuccessMessage(null), 3000);
-  };
-
-  const handleStatusUpdate = async (reservationId: string, newStatus: string) => {
-    try {
-      console.log('🔄 handleStatusUpdate called:', { reservationId, newStatus });
-      setUpdatingBooking(reservationId);
-      
-      // Show immediate feedback
-      setStatusChangeFeedback(prev => ({
-        ...prev,
-        [reservationId]: newStatus
-      }));
-      
-      const response = await fetch(`/api/bookings/${reservationId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      console.log('🔄 Status update response:', { status: response.status, ok: response.ok });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('🔄 Status update success:', result);
-        
-        // Update the local state immediately for better UX
-        setReservations(prevReservations => 
-          prevReservations.map(reservation => 
-            reservation.id === reservationId 
-              ? { ...reservation, status: newStatus as any }
-              : reservation
-          )
-        );
-        
-        // Also update filtered reservations immediately
-        setFilteredReservations(prevFiltered => 
-          prevFiltered.map(reservation => 
-            reservation.id === reservationId 
-              ? { ...reservation, status: newStatus as any }
-              : reservation
-          )
-        );
-        
-        // Clear the feedback after a short delay
-        setTimeout(() => {
-          setStatusChangeFeedback(prev => {
-            const newState = { ...prev };
-            delete newState[reservationId];
-            return newState;
-          });
-        }, 2000);
-        
-        // Show success message
-        showSuccessMessage(`Réservation ${newStatus === 'confirmed' ? 'confirmée' : newStatus === 'cancelled' ? 'annulée' : 'mise à jour'} avec succès !`);
-        
-        // Notify parent component of the update
-        if (onReservationUpdate) {
-          onReservationUpdate();
-        }
-        
-        // Refresh the data from server to ensure consistency
-        await loadReservations();
-      } else {
-        const errorData = await response.json();
-        console.error('❌ Error updating booking:', errorData);
-        
-        // Clear the feedback on error
-        setStatusChangeFeedback(prev => {
-          const newState = { ...prev };
-          delete newState[reservationId];
-          return newState;
-        });
-        
-        alert(`Erreur lors de la mise à jour: ${errorData.error || 'Erreur inconnue'}`);
-      }
-    } catch (error) {
-      console.error('❌ Error updating booking status:', error);
-      
-      // Clear the feedback on error
-      setStatusChangeFeedback(prev => {
-        const newState = { ...prev };
-        delete newState[reservationId];
-        return newState;
-      });
-      
-      alert('Erreur lors de la mise à jour du statut');
-    } finally {
-      setUpdatingBooking(null);
-    }
-  };
-
-  const handleDeleteBooking = async (bookingId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ? Cette action est irréversible.')) {
-      return;
-    }
-
-    try {
-      console.log('🗑️ handleDeleteBooking called:', { bookingId });
-      setDeletingBooking(bookingId);
-      
-      const response = await fetch(`/api/bookings/${bookingId}`, {
-        method: 'DELETE',
-      });
-
-      console.log('🗑️ Delete response:', { status: response.status, ok: response.ok });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('🗑️ Delete success:', result);
-        
-        // Remove the booking from local state immediately for better UX
-        setReservations(prevReservations => 
-          prevReservations.filter(reservation => reservation.id !== bookingId)
-        );
-        
-        // Also remove from filtered reservations immediately
-        setFilteredReservations(prevFiltered => 
-          prevFiltered.filter(reservation => reservation.id !== bookingId)
-        );
-        
-        // Show success message
-        showSuccessMessage('Réservation supprimée avec succès !');
-        
-        // Notify parent component of the update
-        if (onReservationUpdate) {
-          onReservationUpdate();
-        }
-        
-        // Refresh the data from server to ensure consistency
-        await loadReservations();
-      } else {
-        const errorData = await response.json();
-        console.error('❌ Error deleting booking:', errorData);
-        alert(`Erreur lors de la suppression: ${errorData.error || 'Erreur inconnue'}`);
-      }
-    } catch (error) {
-      console.error('❌ Error deleting booking:', error);
-      alert('Erreur lors de la suppression de la réservation');
-    } finally {
-      setDeletingBooking(null);
     }
   };
 
@@ -355,16 +199,6 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
           </button>
         </div>
 
-        {/* Success Message */}
-        {successMessage && (
-          <div className="mx-6 mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <CheckCircle2 className="w-5 h-5 text-green-600" />
-              <span className="text-green-800 font-medium">{successMessage}</span>
-            </div>
-          </div>
-        )}
-
         {/* Filter Section */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center space-x-4">
@@ -439,18 +273,10 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
                         </p>
                       </div>
                     </div>
-                    <Badge className={getStatusColor(statusChangeFeedback[reservation.id] || reservation.status)}>
+                    <Badge className={getStatusColor(reservation.status)}>
                       <div className="flex items-center space-x-1">
-                        {getStatusIcon(statusChangeFeedback[reservation.id] || reservation.status)}
-                        <span>
-                          {statusChangeFeedback[reservation.id] 
-                            ? `Mise à jour: ${getStatusText(statusChangeFeedback[reservation.id])}`
-                            : getStatusText(reservation.status)
-                          }
-                        </span>
-                        {statusChangeFeedback[reservation.id] && (
-                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
-                        )}
+                        {getStatusIcon(reservation.status)}
+                        <span>{getStatusText(reservation.status)}</span>
                       </div>
                     </Badge>
                   </div>
@@ -492,7 +318,7 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
                   </div>
 
                   {/* Additional Info */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Travel Type */}
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-[#2d5016] rounded-full"></div>
@@ -514,7 +340,7 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
 
                   {/* Special Requests */}
                   {reservation.special_requests && (
-                    <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                       <p className="text-sm font-medium text-blue-900 mb-1">
                         Demandes spéciales:
                       </p>
@@ -523,86 +349,6 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
                       </p>
                     </div>
                   )}
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-200">
-                    {reservation.status === 'pending' && (
-                      <>
-                        <button
-                          onClick={() => {
-                            console.log('🟢 Confirmer button clicked for reservation:', reservation.id);
-                            handleStatusUpdate(reservation.id, 'confirmed');
-                          }}
-                          disabled={updatingBooking === reservation.id}
-                          className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-green-600/25 disabled:opacity-50 text-sm"
-                        >
-                          {updatingBooking === reservation.id ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          ) : (
-                            <>
-                              <CheckCircle2 className="w-4 h-4" />
-                              <span>Confirmer</span>
-                            </>
-                          )}
-                        </button>
-                        <button
-                          onClick={() => {
-                            console.log('🔴 Refuser button clicked for reservation:', reservation.id);
-                            handleStatusUpdate(reservation.id, 'cancelled');
-                          }}
-                          disabled={updatingBooking === reservation.id}
-                          className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-600/25 disabled:opacity-50 text-sm"
-                        >
-                          {updatingBooking === reservation.id ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          ) : (
-                            <>
-                              <Ban className="w-4 h-4" />
-                              <span>Refuser</span>
-                            </>
-                          )}
-                        </button>
-                      </>
-                    )}
-                    
-                    {reservation.status === 'confirmed' && (
-                      <button
-                        onClick={() => {
-                          console.log('🔵 Marquer comme terminée button clicked for reservation:', reservation.id);
-                          handleStatusUpdate(reservation.id, 'completed');
-                        }}
-                        disabled={updatingBooking === reservation.id}
-                        className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-blue-600/25 disabled:opacity-50 text-sm"
-                      >
-                        {updatingBooking === reservation.id ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        ) : (
-                          <>
-                            <CheckCircle className="w-4 h-4" />
-                            <span>Marquer comme terminée</span>
-                          </>
-                        )}
-                      </button>
-                    )}
-
-                    <button
-                      onClick={() => {
-                        console.log('🗑️ Supprimer button clicked for reservation:', reservation.id);
-                        handleDeleteBooking(reservation.id);
-                      }}
-                      disabled={deletingBooking === reservation.id}
-                      className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-gray-600/25 disabled:opacity-50 text-sm"
-                    >
-                      {deletingBooking === reservation.id ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      ) : (
-                        <>
-                          <Trash2 className="w-4 h-4" />
-                          <span>Supprimer</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
                 </div>
               ))}
             </div>

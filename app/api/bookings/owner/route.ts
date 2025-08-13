@@ -17,26 +17,42 @@ export async function GET(request: NextRequest) {
 
     console.log('🔍 Fetching bookings for owner:', ownerId);
 
-    // Build the query based on parameters
+    // Build the query - only fetch client data, not property data
+    // First get the property IDs owned by this owner
+    const { data: ownedProperties, error: propertyError } = await supabase
+      .from('properties')
+      .select('id')
+      .eq('owner_id', ownerId);
+
+    if (propertyError) {
+      console.error('Error fetching owned properties:', propertyError);
+      return NextResponse.json(
+        { error: 'Failed to fetch owned properties' },
+        { status: 500 }
+      );
+    }
+
+    const ownedPropertyIds = ownedProperties?.map(p => p.id) || [];
+    
+    if (ownedPropertyIds.length === 0) {
+      return NextResponse.json({ 
+        data: [],
+        count: 0
+      });
+    }
+
+    // Now get bookings for those properties
     let query = supabase
       .from('bookings')
       .select(`
         *,
-        properties (
-          id,
-          name,
-          location,
-          images,
-          price_per_night,
-          owner_id
-        ),
         profiles:client_id (
           id,
           full_name,
           email
         )
       `)
-      .eq('properties.owner_id', ownerId);
+      .in('property_id', ownedPropertyIds);
 
     // Filter by status if provided
     if (status && status !== 'all') {
@@ -58,74 +74,22 @@ export async function GET(request: NextRequest) {
 
     console.log('🔍 Raw bookings data:', bookings);
 
-    // Transform the data to match the expected format
-    const transformedBookings = await Promise.all(bookings?.map(async (booking) => {
+    // Transform the data - use stored property data from booking record
+    const transformedBookings = bookings?.map((booking) => {
       console.log('🔍 Processing booking:', booking.id);
-      console.log('🔍 Raw booking data:', {
-        property_name: booking.property_name,
-        property_location: booking.property_location,
-        property_price_per_night: booking.property_price_per_night,
-        property_max_guests: booking.property_max_guests,
-        property_images: booking.property_images
-      });
-      console.log('🔍 Joined property data:', booking.properties);
       
-      // Handle missing property data
-      const propertyData = booking.properties || {};
-      const clientData = booking.profiles || {};
-      
-      // Prioritize stored property data from booking record over joined data
-      // This ensures property info is available even if property gets deleted
-      const hasValidProperty = propertyData && propertyData.id && propertyData.name;
-      const hasStoredPropertyData = booking.property_name && booking.property_location;
-      
-      console.log('🔍 Property data flags:', {
-        hasValidProperty,
-        hasStoredPropertyData,
-        storedName: booking.property_name,
-        storedLocation: booking.property_location
-      });
-      
-      // If no property data available, try to fetch it directly from properties table
-      let fallbackPropertyData = null;
-      if (!hasValidProperty && !hasStoredPropertyData && booking.property_id) {
-        try {
-          const { data: fallbackProperty } = await supabase
-            .from('properties')
-            .select('id, name, location, images, price_per_night')
-            .eq('id', booking.property_id)
-            .single();
-          
-          if (fallbackProperty) {
-            fallbackPropertyData = fallbackProperty;
-            console.log('🔍 Using fallback property data:', fallbackProperty);
-          }
-        } catch (error) {
-          console.log('🔍 Could not fetch fallback property data for booking:', booking.id);
-        }
-      }
-      
-      const finalProperty = hasValidProperty ? {
-        id: propertyData.id,
-        name: propertyData.name,
-        location: propertyData.location || 'Localisation inconnue',
-        images: propertyData.images || [],
-        price_per_night: propertyData.price_per_night || 0
-      } : hasStoredPropertyData ? {
+      // Use stored property data from the booking record
+      const propertyData = {
         id: 'stored',
-        name: booking.property_name,
-        location: booking.property_location,
+        name: booking.property_name || 'Propriété supprimée',
+        location: booking.property_location || 'Localisation inconnue',
         images: booking.property_images || [],
         price_per_night: booking.property_price_per_night || 0
-      } : fallbackPropertyData ? {
-        id: fallbackPropertyData.id,
-        name: fallbackPropertyData.name,
-        location: fallbackPropertyData.location || 'Localisation inconnue',
-        images: fallbackPropertyData.images || [],
-        price_per_night: fallbackPropertyData.price_per_night || 0
-      } : null;
+      };
       
-      console.log('🔍 Final property data for dashboard:', finalProperty);
+      const clientData = booking.profiles || {};
+      
+      console.log('🔍 Using stored property data:', propertyData);
       
       return {
         id: booking.id,
@@ -140,14 +104,14 @@ export async function GET(request: NextRequest) {
         travel_type: booking.travel_type,
         created_at: booking.created_at,
         updated_at: booking.updated_at,
-        property: finalProperty,
+        property: propertyData,
         client: {
           id: clientData.id || 'unknown',
           full_name: clientData.full_name || 'Client inconnu',
           email: clientData.email || 'Email inconnu'
         }
       };
-    }) || []);
+    }) || [];
 
     console.log('🔍 Transformed bookings:', transformedBookings);
 
