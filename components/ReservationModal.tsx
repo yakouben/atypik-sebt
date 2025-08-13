@@ -115,6 +115,7 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
 
   const handleStatusUpdate = async (reservationId: string, newStatus: string) => {
     try {
+      console.log('🔄 handleStatusUpdate called:', { reservationId, newStatus });
       setUpdatingBooking(reservationId);
       
       const response = await fetch(`/api/bookings/${reservationId}`, {
@@ -125,7 +126,12 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
         body: JSON.stringify({ status: newStatus }),
       });
 
+      console.log('🔄 Status update response:', { status: response.status, ok: response.ok });
+
       if (response.ok) {
+        const result = await response.json();
+        console.log('🔄 Status update success:', result);
+        
         // Update the local state
         setReservations(prevReservations => 
           prevReservations.map(reservation => 
@@ -142,11 +148,11 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
         await loadReservations();
       } else {
         const errorData = await response.json();
-        console.error('Error updating booking:', errorData);
+        console.error('❌ Error updating booking:', errorData);
         alert(`Erreur lors de la mise à jour: ${errorData.error || 'Erreur inconnue'}`);
       }
     } catch (error) {
-      console.error('Error updating booking status:', error);
+      console.error('❌ Error updating booking status:', error);
       alert('Erreur lors de la mise à jour du statut');
     } finally {
       setUpdatingBooking(null);
@@ -159,13 +165,19 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
     }
 
     try {
+      console.log('🗑️ handleDeleteBooking called:', { bookingId });
       setDeletingBooking(bookingId);
       
       const response = await fetch(`/api/bookings/${bookingId}`, {
         method: 'DELETE',
       });
 
+      console.log('🗑️ Delete response:', { status: response.status, ok: response.ok });
+
       if (response.ok) {
+        const result = await response.json();
+        console.log('🗑️ Delete success:', result);
+        
         // Remove the booking from local state
         setReservations(prevReservations => 
           prevReservations.filter(reservation => reservation.id !== bookingId)
@@ -178,11 +190,11 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
         await loadReservations();
       } else {
         const errorData = await response.json();
-        console.error('Error deleting booking:', errorData);
+        console.error('❌ Error deleting booking:', errorData);
         alert(`Erreur lors de la suppression: ${errorData.error || 'Erreur inconnue'}`);
       }
     } catch (error) {
-      console.error('Error deleting booking:', error);
+      console.error('❌ Error deleting booking:', error);
       alert('Erreur lors de la suppression de la réservation');
     } finally {
       setDeletingBooking(null);
@@ -436,7 +448,10 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
                     {reservation.status === 'pending' && (
                       <>
                         <button
-                          onClick={() => handleStatusUpdate(reservation.id, 'confirmed')}
+                          onClick={() => {
+                            console.log('🟢 Confirmer button clicked for reservation:', reservation.id);
+                            handleStatusUpdate(reservation.id, 'confirmed');
+                          }}
                           disabled={updatingBooking === reservation.id}
                           className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-green-600/25 disabled:opacity-50 text-sm"
                         >
@@ -450,7 +465,10 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
                           )}
                         </button>
                         <button
-                          onClick={() => handleStatusUpdate(reservation.id, 'cancelled')}
+                          onClick={() => {
+                            console.log('🔴 Refuser button clicked for reservation:', reservation.id);
+                            handleStatusUpdate(reservation.id, 'cancelled');
+                          }}
                           disabled={updatingBooking === reservation.id}
                           className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-600/25 disabled:opacity-50 text-sm"
                         >
@@ -468,7 +486,10 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
                     
                     {reservation.status === 'confirmed' && (
                       <button
-                        onClick={() => handleStatusUpdate(reservation.id, 'completed')}
+                        onClick={() => {
+                          console.log('🔵 Marquer comme terminée button clicked for reservation:', reservation.id);
+                          handleStatusUpdate(reservation.id, 'completed');
+                        }}
                         disabled={updatingBooking === reservation.id}
                         className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-blue-600/25 disabled:opacity-50 text-sm"
                       >
@@ -484,7 +505,10 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
                     )}
 
                     <button
-                      onClick={() => handleDeleteBooking(reservation.id)}
+                      onClick={() => {
+                        console.log('🗑️ Supprimer button clicked for reservation:', reservation.id);
+                        handleDeleteBooking(reservation.id);
+                      }}
                       disabled={deletingBooking === reservation.id}
                       className="flex items-center space-x-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-gray-600/25 disabled:opacity-50 text-sm"
                     >
