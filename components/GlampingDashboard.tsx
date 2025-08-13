@@ -1089,19 +1089,19 @@ export default function GlampingDashboard() {
 
             {/* Bookings List */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-              <div className="p-6 border-b border-gray-100">
-                <h3 className="text-xl font-bold text-gray-900">
+              <div className="p-4 sm:p-6 border-b border-gray-100">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900">
                   Réservations ({filteredBookings.length})
                 </h3>
               </div>
 
               {filteredBookings.length === 0 ? (
-                <div className="p-12 text-center">
-                  <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-medium text-gray-900 mb-2">
+                <div className="p-8 sm:p-12 text-center">
+                  <Calendar className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2">
                     Aucune réservation trouvée
                   </h3>
-                  <p className="text-gray-500">
+                  <p className="text-gray-500 text-sm sm:text-base">
                     {selectedBookingStatus !== 'all' || bookingSearchQuery 
                       ? 'Aucune réservation ne correspond à vos critères de recherche.'
                       : 'Vous n\'avez pas encore de réservations.'
@@ -1111,71 +1111,70 @@ export default function GlampingDashboard() {
               ) : (
                 <div className="divide-y divide-gray-100">
                   {filteredBookings.map((booking) => (
-                    <div key={booking.id} className="p-6 hover:bg-gray-50 transition-colors">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Client and Booking Information */}
+                    <div key={booking.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+                        {/* Property and Booking Information */}
                         <div className="space-y-4">
+                          {/* Property Header with Image and Status */}
                           <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="text-xl font-bold text-gray-900 mb-2">
-                                Réservation #{booking.id.slice(-8)}
-                              </h4>
-                              {/* Property Name Display */}
+                            <div className="flex-1 min-w-0">
+                              {/* Property Information with Image */}
                               {booking.property_name && (
-                                <div className="mb-3">
-                                  <div className="flex items-center gap-3">
-                                    {/* Property Image */}
-                                    {booking.property_images && booking.property_images.length > 0 ? (
-                                      <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-gray-200 flex-shrink-0">
-                                        <img 
-                                          src={booking.property_images[0]} 
-                                          alt={booking.property_name}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      </div>
-                                    ) : (
-                                      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 border-2 border-gray-200 flex-shrink-0 flex items-center justify-center">
-                                        <Home className="w-6 h-6 text-gray-400" />
+                                <div className="flex items-start gap-3 mb-4">
+                                  {/* Property Image */}
+                                  {booking.property_images && booking.property_images.length > 0 ? (
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 border-gray-200 flex-shrink-0 shadow-sm">
+                                      <img 
+                                        src={booking.property_images[0]} 
+                                        alt={booking.property_name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gradient-to-br from-gray-200 to-gray-300 border-2 border-gray-200 flex-shrink-0 flex items-center justify-center shadow-sm">
+                                      <Home className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+                                    </div>
+                                  )}
+                                  
+                                  {/* Property Details */}
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="text-lg sm:text-xl font-bold text-[#4A7C59] mb-2 line-clamp-2">
+                                      {booking.property_name}
+                                    </h4>
+                                    {booking.property_location && (
+                                      <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600 mb-2">
+                                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                                        <span className="line-clamp-1">{booking.property_location}</span>
                                       </div>
                                     )}
-                                    
-                                    {/* Property Info */}
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2 text-lg font-semibold text-[#4A7C59]">
-                                        <Home className="w-5 h-5" />
-                                        {booking.property_name}
-                                      </div>
-                                      {booking.property_location && (
-                                        <div className="flex items-center gap-2 text-sm text-gray-600 ml-7">
-                                          <MapPin className="w-4 h-4" />
-                                          {booking.property_location}
-                                        </div>
-                                      )}
-                                    </div>
                                   </div>
                                 </div>
                               )}
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <Calendar className="w-4 h-4" />
+
+                              {/* Booking Details */}
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
+                                  <Calendar className="w-4 h-4 flex-shrink-0" />
                                   <span>{formatDate(booking.check_in_date)} - {formatDate(booking.check_out_date)}</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <Users className="w-4 h-4" />
+                                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-600">
+                                  <Users className="w-4 h-4 flex-shrink-0" />
                                   <span>{booking.guest_count} invités</span>
                                 </div>
                                 {booking.special_requests && (
-                                  <div className="text-sm text-gray-600">
-                                    <span className="font-medium">Demandes spéciales:</span> {booking.special_requests}
+                                  <div className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+                                    <span className="font-medium text-gray-700">Demandes spéciales:</span> 
+                                    <span className="ml-2">{booking.special_requests}</span>
                                   </div>
                                 )}
                               </div>
                             </div>
-                            <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusColor(booking.status)}`}>
+
+                            {/* Status Badge */}
+                            <div className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-medium capitalize flex-shrink-0 ${getStatusColor(booking.status)}`}>
                               {getStatusIcon(booking.status)}
-                              <span className="text-sm font-medium capitalize">
-                                {getStatusText(booking.status)}
-                              </span>
+                              <span className="hidden sm:inline">{getStatusText(booking.status)}</span>
+                              <span className="sm:hidden">{getStatusText(booking.status).charAt(0)}</span>
                             </div>
                           </div>
                         </div>
@@ -1183,34 +1182,37 @@ export default function GlampingDashboard() {
                         {/* Client Information and Actions */}
                         <div className="space-y-4">
                           {/* Client Information */}
-                          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
+                          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
                             <h5 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                               <User className="w-5 h-5 text-blue-600" />
-                              Informations client
+                              <span className="text-sm sm:text-base">Informations client</span>
                             </h5>
                             <div className="space-y-2 text-sm">
-                              <div>
-                                <span className="font-medium text-gray-700">Nom:</span> {booking.full_name}
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-gray-700 min-w-[60px]">Nom:</span> 
+                                <span className="text-gray-800">{booking.full_name}</span>
                               </div>
-                              <div>
-                                <span className="font-medium text-gray-700">Contact:</span> {booking.email_or_phone}
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-gray-700 min-w-[60px]">Contact:</span> 
+                                <span className="text-gray-800 break-all">{booking.email_or_phone}</span>
                               </div>
                               {booking.travel_type && (
-                                <div>
-                                  <span className="font-medium text-gray-700">Type de voyage:</span> {booking.travel_type}
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-gray-700 min-w-[60px]">Type:</span> 
+                                  <span className="text-gray-800 capitalize">{booking.travel_type}</span>
                                 </div>
                               )}
                             </div>
                           </div>
 
                           {/* Price and Actions */}
-                          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4">
+                          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
                             <h5 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                               <Euro className="w-5 h-5 text-green-600" />
-                              Prix et Actions
+                              <span className="text-sm sm:text-base">Prix et Actions</span>
                             </h5>
                             <div className="text-center mb-4">
-                              <div className="text-2xl font-bold text-[#4A7C59] mb-2">
+                              <div className="text-xl sm:text-2xl font-bold text-[#4A7C59] mb-2">
                                 {formatPrice(booking.total_price)}
                               </div>
                               <div className="text-xs text-gray-500">
@@ -1225,28 +1227,30 @@ export default function GlampingDashboard() {
                                   <button
                                     onClick={() => handleStatusUpdate(booking.id, 'confirmed')}
                                     disabled={updatingBooking === booking.id}
-                                    className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-green-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="w-full bg-green-600 hover:bg-green-700 text-white px-3 py-2.5 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-green-600/25 flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
                                   >
                                     {updatingBooking === booking.id ? (
                                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                                     ) : (
                                       <>
                                         <CheckCircle2 className="w-4 h-4" />
-                                        Confirmer
+                                        <span className="hidden sm:inline">Confirmer</span>
+                                        <span className="sm:hidden">Confirmer</span>
                                       </>
                                     )}
                                   </button>
                                   <button
                                     onClick={() => handleStatusUpdate(booking.id, 'cancelled')}
                                     disabled={updatingBooking === booking.id}
-                                    className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2.5 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-red-600/25 flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
                                   >
                                     {updatingBooking === booking.id ? (
                                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                                     ) : (
                                       <>
                                         <Ban className="w-4 h-4" />
-                                        Refuser
+                                        <span className="hidden sm:inline">Refuser</span>
+                                        <span className="sm:hidden">Refuser</span>
                                       </>
                                     )}
                                   </button>
@@ -1257,14 +1261,15 @@ export default function GlampingDashboard() {
                                 <button
                                   onClick={() => handleStatusUpdate(booking.id, 'completed')}
                                   disabled={updatingBooking === booking.id}
-                                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-blue-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-blue-600/25 flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
                                 >
                                   {updatingBooking === booking.id ? (
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                                   ) : (
                                     <>
                                       <CheckCircle className="w-4 h-4" />
-                                      Marquer comme terminée
+                                      <span className="hidden sm:inline">Marquer comme terminée</span>
+                                      <span className="sm:hidden">Terminée</span>
                                     </>
                                   )}
                                 </button>
@@ -1273,14 +1278,15 @@ export default function GlampingDashboard() {
                               <button
                                 onClick={() => handleDeleteBooking(booking.id)}
                                 disabled={deletingBooking === booking.id}
-                                className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-gray-600/25 flex items-center justify-center gap-2 disabled:opacity-50"
+                                className="w-full bg-gray-600 hover:bg-gray-700 text-white px-3 py-2.5 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-gray-600/25 flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
                               >
                                 {deletingBooking === booking.id ? (
                                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                                 ) : (
                                   <>
                                     <Trash2 className="w-4 h-4" />
-                                    Supprimer
+                                    <span className="hidden sm:inline">Supprimer</span>
+                                    <span className="sm:hidden">Supprimer</span>
                                   </>
                                 )}
                               </button>
