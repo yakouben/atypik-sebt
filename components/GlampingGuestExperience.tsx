@@ -26,8 +26,7 @@ import {
   AlertCircle,
   Eye,
   Filter,
-  Search,
-  LayoutDashboard
+  Search
 } from 'lucide-react';
 import { useAuthContext } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
@@ -331,7 +330,7 @@ export default function GlampingGuestExperience() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-[#2C3E37]">
-                  Dashboard
+                  Espace Client
                 </h1>
             </div>
               </div>
@@ -370,38 +369,7 @@ export default function GlampingGuestExperience() {
         {/* Modern Tab Navigation */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 sm:mb-8 overflow-hidden">
           <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-3 sm:flex sm:justify-start">
-              {/* Dashboard Tab */}
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className={`relative group transition-all duration-300 ease-in-out ${
-                  activeTab === 'dashboard'
-                    ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                }`}
-              >
-                <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
-                  <div className="relative">
-                    <LayoutDashboard className={`w-5 h-5 sm:w-6 transition-all duration-300 ${
-                      activeTab === 'dashboard' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
-                    }`} />
-                  </div>
-                  <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
-                    activeTab === 'dashboard' ? 'font-semibold' : 'font-medium'
-                  }`}>
-                    <span className="sm:hidden">Vue</span>
-                    <span className="hidden sm:inline">Vue d'ensemble</span>
-                  </span>
-                  
-                  {/* Animated Underline */}
-                  <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-out ${
-                    activeTab === 'dashboard' 
-                      ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
-                      : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
-                  }`} />
-                </div>
-              </button>
-
+            <div className="grid grid-cols-2 sm:flex sm:justify-start">
               {/* Properties Tab */}
             <button
               onClick={() => setActiveTab('properties')}
@@ -448,9 +416,11 @@ export default function GlampingGuestExperience() {
                       activeTab === 'bookings' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
                     }`} />
                     {/* Badge for booking count */}
-                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-bold text-white">{bookings.length}</span>
-                    </div>
+                    {bookings.length > 0 && (
+                      <div className="absolute -top-1 -right-1 bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center shadow-lg border-2 border-white transform scale-100 group-hover:scale-110 transition-transform duration-200">
+                        {bookings.length}
+                      </div>
+                    )}
                   </div>
                   <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
                     activeTab === 'bookings' ? 'font-semibold' : 'font-medium'
@@ -465,123 +435,13 @@ export default function GlampingGuestExperience() {
                       ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
                       : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
                   }`} />
-              </div>
-            </button>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Main Content */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            {/* Enhanced Stats Cards */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-              {/* Single Line Horizontal Navbar - No Wrapping */}
-              <div className="flex flex-nowrap gap-2 sm:gap-3 overflow-x-auto pb-2">
-                <div className="flex-shrink-0 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-2 sm:p-3 min-w-[80px] sm:min-w-[100px] border border-blue-200">
-                  <div className="flex flex-col items-center text-center">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mb-1 sm:mb-2" />
-                    <p className="text-xs font-medium text-blue-700 mb-1">Total</p>
-                    <p className="text-sm sm:text-lg font-bold text-blue-900">{bookingsLoading ? '...' : stats.total}</p>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl p-2 sm:p-3 min-w-[80px] sm:min-w-[100px] border border-yellow-200">
-                  <div className="flex flex-col items-center text-center">
-                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 mb-1 sm:mb-2" />
-                    <p className="text-xs font-medium text-yellow-700 mb-1">En attente</p>
-                    <p className="text-sm sm:text-lg font-bold text-yellow-900">{bookingsLoading ? '...' : stats.pending}</p>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0 bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-2 sm:p-3 min-w-[80px] sm:min-w-[100px] border border-green-200">
-                  <div className="flex flex-col items-center text-center">
-                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mb-1 sm:mb-2" />
-                    <p className="text-xs font-medium text-green-700 mb-1">Confirmées</p>
-                    <p className="text-sm sm:text-lg font-bold text-green-900">{bookingsLoading ? '...' : stats.confirmed}</p>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0 bg-gradient-to-r from-[#4A7C59]/10 to-[#2C3E37]/10 rounded-xl p-2 sm:p-3 min-w-[80px] sm:min-w-[100px] border border-[#4A7C59]/20">
-                  <div className="flex flex-col items-center text-center">
-                    <Euro className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A7C59] mb-1 sm:mb-2" />
-                    <p className="text-xs font-medium text-[#4A7C59] mb-1">Total Dépensé</p>
-                    <p className="text-sm sm:text-lg font-bold text-[#2C3E37]">{bookingsLoading ? '...' : formatPrice(stats.totalSpent)}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* My Bookings Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-              <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Mes réservations récentes</h3>
-                  <button 
-                    onClick={() => setActiveTab('bookings')}
-                    className="text-green-600 hover:text-green-700 font-medium text-sm transition-colors"
-                  >
-                    Voir toutes →
-                  </button>
-                </div>
-              </div>
-              
-              {bookingsLoading ? (
-                <div className="p-8 text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Chargement des réservations...</p>
-                </div>
-              ) : bookings.length === 0 ? (
-                <div className="p-8 text-center">
-                  <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Aucune réservation encore
-                  </h3>
-                  <p className="text-gray-500 mb-4">
-                    Commencez à explorer nos hébergements uniques et réservez votre premier séjour.
-                  </p>
-                  <button className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] hover:from-[#2C3E37] hover:to-[#4A7C59] text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#4A7C59]/25">
-                    Explorer les hébergements
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4 p-6">
-                  {bookings.slice(0, 3).map((booking) => (
-                    <div key={booking.id} className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition-colors cursor-pointer" onClick={() => {
-                      setSelectedBooking(booking);
-                      setShowBookingModal(true);
-                    }}>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="text-lg font-semibold text-gray-900 mb-1">{booking.properties.name}</h4>
-                          <div className="flex items-center text-gray-600 mb-2">
-                            <MapPin className="w-4 h-4 mr-1" />
-                            <span className="text-sm">{booking.properties.location}</span>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <span>{formatDate(booking.check_in_date)} - {formatDate(booking.check_out_date)}</span>
-                            <span className="flex items-center">
-                              <Users className="w-4 h-4 mr-1" />
-                              {booking.guest_count} invités
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-right ml-4">
-                          <div className="text-lg font-bold text-gray-900 mb-2">{formatPrice(booking.total_price)}</div>
-                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(booking.status)}`}>
-                            {getStatusIcon(booking.status)}
-                            {getStatusText(booking.status)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {activeTab === 'properties' && (
           <>
             {/* Search and Filters */}
