@@ -166,13 +166,25 @@ export default function GlampingDashboard() {
   const loadBookings = async () => {
     try {
       if (userProfile?.id) {
+        console.log('🔄 DASHBOARD: Starting to load bookings for user:', userProfile.id);
         const bookingsData = await getOwnerBookings(userProfile.id);
+        console.log('📊 DASHBOARD: Raw bookings response:', bookingsData);
+        
         if (bookingsData.data) {
+          console.log('📋 DASHBOARD: Bookings data received:', bookingsData.data.length, 'bookings');
+          console.log('🏠 DASHBOARD: Property names in bookings:', bookingsData.data.map(b => ({
+            id: b.id,
+            propertyName: b.property?.name,
+            propertyLocation: b.property?.location,
+            propertyImages: b.property?.images?.length || 0
+          })));
           setBookings(bookingsData.data);
+        } else {
+          console.warn('⚠️ DASHBOARD: No bookings data received');
         }
       }
     } catch (error) {
-      console.error('Error loading bookings:', error);
+      console.error('❌ DASHBOARD: Error loading bookings:', error);
     }
   };
 

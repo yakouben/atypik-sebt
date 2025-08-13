@@ -32,7 +32,8 @@ export async function GET(request: NextRequest) {
     }
 
     const propertyIds = ownedProperties?.map(p => p.id) || [];
-    console.log('🔍 Found owned properties:', propertyIds);
+    console.log('🏠 OWNED PROPERTIES:', ownedProperties);
+    console.log('🆔 PROPERTY IDs:', propertyIds);
 
     if (propertyIds.length === 0) {
       return NextResponse.json({ 
@@ -60,7 +61,6 @@ export async function GET(request: NextRequest) {
         travel_type,
         created_at,
         updated_at,
-        // Try to get stored property data first
         property_name,
         property_location,
         property_price_per_night,
@@ -87,7 +87,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('🔍 Raw bookings data:', bookings?.length || 0);
+    console.log('📋 RAW BOOKINGS COUNT:', bookings?.length || 0);
+    console.log('📋 RAW BOOKINGS DATA:', JSON.stringify(bookings, null, 2));
 
     // STEP 3: Get client profiles for all bookings
     const clientIds = [...new Set(bookings?.map(b => b.client_id).filter(Boolean))];
@@ -105,18 +106,30 @@ export async function GET(request: NextRequest) {
           return acc;
         }, {});
       }
+      console.log('👥 CLIENT PROFILES:', clientProfiles);
     }
 
     // STEP 4: Transform the data with proper property information
-    const transformedBookings = bookings?.map((booking) => {
+    const transformedBookings = bookings?.map((booking, index) => {
+      console.log(`\n🔍 PROCESSING BOOKING ${index + 1}:`, booking.id);
+      console.log(`📌 Property ID:`, booking.property_id);
+      
       // Find the property data for this booking
       const propertyData = ownedProperties?.find(p => p.id === booking.property_id);
+      console.log(`🏠 Found Property Data:`, propertyData);
+      
       const clientData = clientProfiles[booking.client_id] || {};
+      console.log(`👤 Client Data:`, clientData);
 
-      // Build the property object with priority:
-      // 1. Stored property data (if available)
-      // 2. Live property data (if property still exists)
-      // 3. Fallback data
+      // Log stored property data from booking
+      console.log(`💾 STORED PROPERTY DATA FROM BOOKING:`);
+      console.log(`   - property_name:`, booking.property_name);
+      console.log(`   - property_location:`, booking.property_location);
+      console.log(`   - property_images:`, booking.property_images);
+      console.log(`   - property_price_per_night:`, booking.property_price_per_night);
+      console.log(`   - property_max_guests:`, booking.property_max_guests);
+
+      // Build the property object with priority logic
       const property = {
         id: booking.property_id,
         name: booking.property_name || propertyData?.name || 'Propriété inconnue',
@@ -126,7 +139,10 @@ export async function GET(request: NextRequest) {
         max_guests: booking.property_max_guests || propertyData?.max_guests || 0
       };
 
-      return {
+      console.log(`✅ FINAL PROPERTY OBJECT:`, property);
+      console.log(`🎯 FINAL PROPERTY NAME:`, property.name);
+
+      const transformedBooking = {
         id: booking.id,
         property_id: booking.property_id,
         check_in_date: booking.check_in_date,
@@ -147,9 +163,13 @@ export async function GET(request: NextRequest) {
           email: clientData.email || 'Email inconnu'
         }
       };
+
+      console.log(`🎉 TRANSFORMED BOOKING:`, JSON.stringify(transformedBooking, null, 2));
+      return transformedBooking;
     }) || [];
 
-    console.log('✅ Transformed bookings successfully:', transformedBookings.length);
+    console.log('✅ FINAL TRANSFORMED BOOKINGS:', transformedBookings.length);
+    console.log('🎯 ALL PROPERTY NAMES:', transformedBookings.map(b => b.property.name));
 
     return NextResponse.json({ 
       data: transformedBookings,
