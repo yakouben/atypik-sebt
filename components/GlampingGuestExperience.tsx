@@ -27,7 +27,8 @@ import {
   Eye,
   Filter,
   Search,
-  RefreshCw
+  RefreshCw,
+  X
 } from 'lucide-react';
 import { useAuthContext } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
@@ -100,6 +101,15 @@ export default function GlampingGuestExperience() {
   const [clickedPropertyId, setClickedPropertyId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const propertiesPerPage = 4;
+  
+  // Real-time status tracking
+  const [statusNotifications, setStatusNotifications] = useState<{[key: string]: string}>({});
+  const [showStatusAlert, setShowStatusAlert] = useState(false);
+  const [lastStatusUpdate, setLastStatusUpdate] = useState<Date>(new Date());
+
+  // Success message state for booking updates
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     loadProperties();
@@ -116,12 +126,55 @@ export default function GlampingGuestExperience() {
   useEffect(() => {
     if (userProfile?.id) {
       const interval = setInterval(() => {
-        loadBookings();
-      }, 30000); // Refresh every 30 seconds
+        checkForStatusUpdates();
+      }, 10000); // Check every 10 seconds for faster updates
 
       return () => clearInterval(interval);
     }
   }, [userProfile]);
+
+  // Check for real-time status updates
+  const checkForStatusUpdates = async () => {
+    if (!userProfile?.id) return;
+    
+    try {
+      const response = await fetch(`/api/bookings/client?clientId=${userProfile.id}`);
+      const result = await response.json();
+      
+      if (response.ok && result.data) {
+        const newBookings = result.data;
+        
+        // Check for status changes
+        newBookings.forEach((newBooking: Booking) => {
+          const oldBooking = bookings.find(b => b.id === newBooking.id);
+          
+          if (oldBooking && oldBooking.status !== newBooking.status) {
+            // Status changed! Show notification
+            const statusText = getStatusText(newBooking.status);
+            const propertyName = newBooking.properties.name;
+            
+            setStatusNotifications(prev => ({
+              ...prev,
+              [newBooking.id]: `${propertyName}: ${statusText}`
+            }));
+            
+            setShowStatusAlert(true);
+            setLastStatusUpdate(new Date());
+            
+            // Auto-hide notification after 5 seconds
+            setTimeout(() => {
+              setShowStatusAlert(false);
+            }, 5000);
+          }
+        });
+        
+        // Update bookings state
+        setBookings(newBookings);
+      }
+    } catch (error) {
+      console.error('Error checking for status updates:', error);
+    }
+  };
 
   const loadProperties = async () => {
     // Don't block the entire UI for property loading
@@ -774,6 +827,11 @@ export default function GlampingGuestExperience() {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Historique des réservations</h2>
                 <p className="text-gray-600 mt-1">Gérez et suivez toutes vos réservations</p>
+                {/* Live Status Indicator */}
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-green-600 font-medium">Mise à jour en temps réel active</span>
+                </div>
               </div>
               <button 
                 onClick={loadBookings}
@@ -860,13 +918,21 @@ export default function GlampingGuestExperience() {
                                 {booking.properties.location}
                               </p>
                             </div>
-                            <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusColor(booking.status)}`}>
-                              {getStatusIcon(booking.status)}
-                              <span className="text-sm font-medium capitalize">
-                                {getStatusText(booking.status)}
-                              </span>
+                            <div className="flex items-center gap-2">
+                                {/* Real-time status indicator */}
+                                {statusNotifications[booking.id] && (
+                                  <div className="animate-pulse">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                  </div>
+                                )}
+                                <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusColor(booking.status)}`}>
+                                  {getStatusIcon(booking.status)}
+                                  <span className="text-sm font-medium capitalize">
+                                    {getStatusText(booking.status)}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
-                          </div>
 
                           {/* Property Image */}
                           {booking.properties.images && booking.properties.images.length > 0 && (
@@ -1107,6 +1173,62 @@ export default function GlampingGuestExperience() {
                   </p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4 shadow-lg max-w-md">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-green-800">{successMessage}</p>
+              </div>
+              <button
+                onClick={() => setShowSuccessMessage(false)}
+                className="flex-shrink-0 text-green-400 hover:text-green-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Real-time Status Update Notifications */}
+      {showStatusAlert && Object.keys(statusNotifications).length > 0 && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-bounce">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-lg max-w-md">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-blue-600" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-800 mb-1">Mise à jour en temps réel !</p>
+                <div className="space-y-1">
+                  {Object.values(statusNotifications).map((notification, index) => (
+                    <p key={index} className="text-xs text-blue-700">{notification}</p>
+                  ))}
+                </div>
+                <p className="text-xs text-blue-600 mt-2">
+                  Dernière mise à jour: {lastStatusUpdate.toLocaleTimeString('fr-FR')}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowStatusAlert(false)}
+                className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
