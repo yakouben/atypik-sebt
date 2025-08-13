@@ -110,7 +110,7 @@ export default function GlampingDashboard() {
   const [deletingProperty, setDeletingProperty] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
-  const [selectedPropertyName, setSelectedPropertyName] = useState<string>('');
+  const [selectedPropertyName, setSelectedPropertyName] = useState('');
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [bookingSearchQuery, setBookingSearchQuery] = useState('');
   const [selectedBookingStatus, setSelectedBookingStatus] = useState<string>('all');
@@ -119,6 +119,14 @@ export default function GlampingDashboard() {
   const [deletingBooking, setDeletingBooking] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  
+  // Pagination state for properties
+  const [currentPage, setCurrentPage] = useState(1);
+  const [propertiesPerPage] = useState(6);
+  
+  // Pagination state for bookings
+  const [currentBookingsPage, setCurrentBookingsPage] = useState(1);
+  const [bookingsPerPage] = useState(6);
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -203,6 +211,66 @@ export default function GlampingDashboard() {
 
     setFilteredBookings(filtered);
   };
+
+  // Filter and paginate properties
+  const filteredProperties = properties.filter(property => 
+    property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    property.location.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Pagination logic for properties
+  const totalPages = Math.ceil(filteredProperties.length / propertiesPerPage);
+  const startIndex = (currentPage - 1) * propertiesPerPage;
+  const endIndex = startIndex + propertiesPerPage;
+  const currentProperties = filteredProperties.slice(startIndex, endIndex);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  // Pagination logic for bookings
+  const totalBookingsPages = Math.ceil(filteredBookings.length / bookingsPerPage);
+  const startBookingsIndex = (currentBookingsPage - 1) * bookingsPerPage;
+  const endBookingsIndex = startBookingsIndex + bookingsPerPage;
+  const currentBookings = filteredBookings.slice(startBookingsIndex, endBookingsIndex);
+
+  const goToNextBookingsPage = () => {
+    if (currentBookingsPage < totalBookingsPages) {
+      setCurrentBookingsPage(currentBookingsPage + 1);
+    }
+  };
+
+  const goToPreviousBookingsPage = () => {
+    if (currentBookingsPage > 1) {
+      setCurrentBookingsPage(currentBookingsPage - 1);
+    }
+  };
+
+  const goToBookingsPage = (page: number) => {
+    setCurrentBookingsPage(page);
+  };
+
+  // Reset to first page when search or status changes
+  useEffect(() => {
+    setCurrentBookingsPage(1);
+  }, [bookingSearchQuery, selectedBookingStatus]);
 
   const handleEditProperty = (property: Property) => {
     setEditingProperty(property);
@@ -745,12 +813,7 @@ export default function GlampingDashboard() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {properties
-                    .filter(property => 
-                      property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      property.location.toLowerCase().includes(searchQuery.toLowerCase())
-                    )
-                    .map((property) => (
+                  {currentProperties.map((property) => (
                     <div key={property.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl transition-all duration-500 group cursor-pointer">
                       <div className="relative h-48 sm:h-52 lg:h-48 xl:h-52 bg-gradient-to-br from-gray-200 to-gray-300 overflow-hidden">
                         {property.images && property.images.length > 0 ? (
@@ -838,6 +901,79 @@ export default function GlampingDashboard() {
                   ))}
                 </div>
               )}
+              
+              {/* Pagination Controls for Dashboard */}
+              {filteredProperties.length > propertiesPerPage && (
+                <div className="mt-8 flex items-center justify-center">
+                  <div className="flex items-center space-x-2 bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3">
+                    {/* Previous Button */}
+                    <button
+                      onClick={goToPreviousPage}
+                      disabled={currentPage === 1}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                        currentPage === 1
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                      }`}
+                    >
+                      <ArrowRight className="w-4 h-4 rotate-180" />
+                      <span className="hidden sm:inline">Précédent</span>
+                    </button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: totalPages }, (_, index) => {
+                        const page = index + 1;
+                        const isCurrentPage = page === currentPage;
+                        const isNearCurrent = Math.abs(page - currentPage) <= 1;
+                        const isFirstOrLast = page === 1 || page === totalPages;
+                        
+                        if (isCurrentPage || isNearCurrent || isFirstOrLast) {
+                          return (
+                            <button
+                              key={page}
+                              onClick={() => goToPage(page)}
+                              className={`w-10 h-10 rounded-xl font-medium transition-all duration-300 ${
+                                isCurrentPage
+                                  ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white shadow-lg'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          );
+                        } else if (page === 2 && currentPage > 3) {
+                          return <span key={page} className="px-2 text-gray-400">...</span>;
+                        } else if (page === totalPages - 1 && currentPage < totalPages - 2) {
+                          return <span key={page} className="px-2 text-gray-400">...</span>;
+                        }
+                        return null;
+                      })}
+                    </div>
+
+                    {/* Next Button */}
+                    <button
+                      onClick={goToNextPage}
+                      disabled={currentPage === totalPages}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                        currentPage === totalPages
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                      }`}
+                    >
+                      <span className="hidden sm:inline">Suivant</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Page Info for Dashboard */}
+              {filteredProperties.length > 0 && (
+                <div className="mt-4 text-center text-sm text-gray-600">
+                  Affichage de {startIndex + 1} à {Math.min(endIndex, filteredProperties.length)} sur {filteredProperties.length} propriétés
+                </div>
+              )}
             </div>
           </>
         )}
@@ -863,10 +999,7 @@ export default function GlampingDashboard() {
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-bold text-gray-900">
-                    Mes Propriétés ({properties.filter(property => 
-                      property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      property.location.toLowerCase().includes(searchQuery.toLowerCase())
-                    ).length})
+                    Mes Propriétés ({filteredProperties.length})
                   </h3>
                   <button
                     onClick={() => setShowPropertyForm(true)}
@@ -894,12 +1027,7 @@ export default function GlampingDashboard() {
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
-                  {properties
-                    .filter(property => 
-                      property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      property.location.toLowerCase().includes(searchQuery.toLowerCase())
-                    )
-                    .map((property) => (
+                  {currentProperties.map((property) => (
                     <div key={property.id} className="p-6 hover:bg-gray-50 transition-colors">
                       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                         {/* Property Image */}
@@ -993,6 +1121,79 @@ export default function GlampingDashboard() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+              
+              {/* Pagination Controls for Properties Tab */}
+              {filteredProperties.length > propertiesPerPage && (
+                <div className="mt-8 flex items-center justify-center">
+                  <div className="flex items-center space-x-2 bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3">
+                    {/* Previous Button */}
+                    <button
+                      onClick={goToPreviousPage}
+                      disabled={currentPage === 1}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                        currentPage === 1
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                      }`}
+                    >
+                      <ArrowRight className="w-4 h-4 rotate-180" />
+                      <span className="hidden sm:inline">Précédent</span>
+                    </button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: totalPages }, (_, index) => {
+                        const page = index + 1;
+                        const isCurrentPage = page === currentPage;
+                        const isNearCurrent = Math.abs(page - currentPage) <= 1;
+                        const isFirstOrLast = page === 1 || page === totalPages;
+                        
+                        if (isCurrentPage || isNearCurrent || isFirstOrLast) {
+                          return (
+                            <button
+                              key={page}
+                              onClick={() => goToPage(page)}
+                              className={`w-10 h-10 rounded-xl font-medium transition-all duration-300 ${
+                                isCurrentPage
+                                  ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white shadow-lg'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          );
+                        } else if (page === 2 && currentPage > 3) {
+                          return <span key={page} className="px-2 text-gray-400">...</span>;
+                        } else if (page === totalPages - 1 && currentPage < totalPages - 2) {
+                          return <span key={page} className="px-2 text-gray-400">...</span>;
+                        }
+                        return null;
+                      })}
+                    </div>
+
+                    {/* Next Button */}
+                    <button
+                      onClick={goToNextPage}
+                      disabled={currentPage === totalPages}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                        currentPage === totalPages
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                      }`}
+                    >
+                      <span className="hidden sm:inline">Suivant</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Page Info for Properties Tab */}
+              {filteredProperties.length > 0 && (
+                <div className="mt-4 text-center text-sm text-gray-600">
+                  Affichage de {startIndex + 1} à {Math.min(endIndex, filteredProperties.length)} sur {filteredProperties.length} propriétés
                 </div>
               )}
             </div>
@@ -1112,7 +1313,7 @@ export default function GlampingDashboard() {
                 <div className="p-4 sm:p-6">
                   {/* Multi-column grid for large screens */}
                   <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4 sm:gap-6">
-                    {filteredBookings.map((booking) => (
+                    {currentBookings.map((booking) => (
                       <div key={booking.id} className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300 p-4 sm:p-6">
                         {/* Property Header with Image and Status */}
                         <div className="flex items-start justify-between mb-4">
@@ -1294,6 +1495,79 @@ export default function GlampingDashboard() {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+              
+              {/* Pagination Controls for Bookings */}
+              {filteredBookings.length > bookingsPerPage && (
+                <div className="mt-8 flex items-center justify-center">
+                  <div className="flex items-center space-x-2 bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3">
+                    {/* Previous Button */}
+                    <button
+                      onClick={goToPreviousBookingsPage}
+                      disabled={currentBookingsPage === 1}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                        currentBookingsPage === 1
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                      }`}
+                    >
+                      <ArrowRight className="w-4 h-4 rotate-180" />
+                      <span className="hidden sm:inline">Précédent</span>
+                    </button>
+
+                    {/* Page Numbers */}
+                    <div className="flex items-center space-x-1">
+                      {Array.from({ length: totalBookingsPages }, (_, index) => {
+                        const page = index + 1;
+                        const isCurrentPage = page === currentBookingsPage;
+                        const isNearCurrent = Math.abs(page - currentBookingsPage) <= 1;
+                        const isFirstOrLast = page === 1 || page === totalBookingsPages;
+                        
+                        if (isCurrentPage || isNearCurrent || isFirstOrLast) {
+                          return (
+                            <button
+                              key={page}
+                              onClick={() => goToBookingsPage(page)}
+                              className={`w-10 h-10 rounded-xl font-medium transition-all duration-300 ${
+                                isCurrentPage
+                                  ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white shadow-lg'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          );
+                        } else if (page === 2 && currentBookingsPage > 3) {
+                          return <span key={page} className="px-2 text-gray-400">...</span>;
+                        } else if (page === totalBookingsPages - 1 && currentBookingsPage < totalBookingsPages - 2) {
+                          return <span key={page} className="px-2 text-gray-400">...</span>;
+                        }
+                        return null;
+                      })}
+                    </div>
+
+                    {/* Next Button */}
+                    <button
+                      onClick={goToNextBookingsPage}
+                      disabled={currentBookingsPage === totalBookingsPages}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
+                        currentBookingsPage === totalBookingsPages
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                      }`}
+                    >
+                      <span className="hidden sm:inline">Suivant</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Page Info for Bookings */}
+              {filteredBookings.length > 0 && (
+                <div className="mt-4 text-center text-sm text-gray-600">
+                  Affichage de {startBookingsIndex + 1} à {Math.min(endBookingsIndex, filteredBookings.length)} sur {filteredBookings.length} réservations
                 </div>
               )}
             </div>

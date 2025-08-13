@@ -358,7 +358,7 @@ export default function GlampingGuestExperience() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-[#2C3E37]">
-                  Espace Client
+                  Dashboard 
                 </h1>
               </div>
             </div>

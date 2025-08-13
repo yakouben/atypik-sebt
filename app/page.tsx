@@ -531,7 +531,7 @@ export default function Home() {
           {/* Bottom Bar */}
           <div className="border-t border-white/20 mt-8 pt-8 text-center">
             <p className="text-green-100 text-sm">
-              © 2024 AtypikHouse. Tous droits réservés.
+              © 2025 AtypikHouse. Tous droits réservés.
             </p>
           </div>
         </div>

@@ -285,14 +285,14 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
                   <p className="text-base sm:text-lg lg:text-xl text-gray-600 leading-relaxed">
                     Nos hébergements vous immergent dans la beauté de la nature. Profitez de votre temps avec des choix d'hébergements uniques.
                   </p>
-                  <p className="text-gray-500 font-medium text-sm sm:text-base">Depuis 2023</p>
+                  <p className="text-gray-500 font-medium text-sm sm:text-base">Depuis 2025</p>
                 </div>
 
                 {/* Retreat Info */}
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center space-x-2">
                     <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Atypik Retreat</h3>
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Atypik </h3>
                   </div>
                   <p className="text-gray-600 text-sm sm:text-base">
                     Glamping situé en pleine nature avec vue sur les paysages.
