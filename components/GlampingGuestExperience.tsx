@@ -386,8 +386,8 @@ export default function GlampingGuestExperience() {
                 {getGreeting()}, {userProfile?.full_name?.split(' ')[0] || 'Client'}!
               </h2>
               <p className="text-green-100 text-lg">
-                Découvrez des hébergements insolites et éco-responsables en France et en Europe
-            </p>
+                Découvrez des hébergements uniques et éco-responsables
+              </p>
           </div>
             <button className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-medium transition-all hover:bg-white/30 hover:scale-105 shadow-lg">
               Commencer à explorer
