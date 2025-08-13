@@ -64,6 +64,8 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [updatingBooking, setUpdatingBooking] = useState<string | null>(null);
   const [deletingBooking, setDeletingBooking] = useState<string | null>(null);
+  const [statusChangeFeedback, setStatusChangeFeedback] = useState<{[key: string]: string}>({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     console.log('🔍 ReservationModal useEffect:', { isOpen, propertyId });
@@ -113,10 +115,21 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
     }
   };
 
+  const showSuccessMessage = (message: string) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(null), 3000);
+  };
+
   const handleStatusUpdate = async (reservationId: string, newStatus: string) => {
     try {
       console.log('🔄 handleStatusUpdate called:', { reservationId, newStatus });
       setUpdatingBooking(reservationId);
+      
+      // Show immediate feedback
+      setStatusChangeFeedback(prev => ({
+        ...prev,
+        [reservationId]: newStatus
+      }));
       
       const response = await fetch(`/api/bookings/${reservationId}`, {
         method: 'PATCH',
@@ -132,7 +145,7 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
         const result = await response.json();
         console.log('🔄 Status update success:', result);
         
-        // Update the local state
+        // Update the local state immediately for better UX
         setReservations(prevReservations => 
           prevReservations.map(reservation => 
             reservation.id === reservationId 
@@ -141,18 +154,52 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
           )
         );
         
-        // Show success message
-        alert(`Réservation ${newStatus === 'confirmed' ? 'confirmée' : newStatus === 'cancelled' ? 'annulée' : 'mise à jour'} avec succès !`);
+        // Also update filtered reservations immediately
+        setFilteredReservations(prevFiltered => 
+          prevFiltered.map(reservation => 
+            reservation.id === reservationId 
+              ? { ...reservation, status: newStatus as any }
+              : reservation
+          )
+        );
         
-        // Refresh the data
+        // Clear the feedback after a short delay
+        setTimeout(() => {
+          setStatusChangeFeedback(prev => {
+            const newState = { ...prev };
+            delete newState[reservationId];
+            return newState;
+          });
+        }, 2000);
+        
+        // Show success message
+        showSuccessMessage(`Réservation ${newStatus === 'confirmed' ? 'confirmée' : newStatus === 'cancelled' ? 'annulée' : 'mise à jour'} avec succès !`);
+        
+        // Refresh the data from server to ensure consistency
         await loadReservations();
       } else {
         const errorData = await response.json();
         console.error('❌ Error updating booking:', errorData);
+        
+        // Clear the feedback on error
+        setStatusChangeFeedback(prev => {
+          const newState = { ...prev };
+          delete newState[reservationId];
+          return newState;
+        });
+        
         alert(`Erreur lors de la mise à jour: ${errorData.error || 'Erreur inconnue'}`);
       }
     } catch (error) {
       console.error('❌ Error updating booking status:', error);
+      
+      // Clear the feedback on error
+      setStatusChangeFeedback(prev => {
+        const newState = { ...prev };
+        delete newState[reservationId];
+        return newState;
+      });
+      
       alert('Erreur lors de la mise à jour du statut');
     } finally {
       setUpdatingBooking(null);
@@ -178,15 +225,20 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
         const result = await response.json();
         console.log('🗑️ Delete success:', result);
         
-        // Remove the booking from local state
+        // Remove the booking from local state immediately for better UX
         setReservations(prevReservations => 
           prevReservations.filter(reservation => reservation.id !== bookingId)
         );
         
-        // Show success message
-        alert('Réservation supprimée avec succès !');
+        // Also remove from filtered reservations immediately
+        setFilteredReservations(prevFiltered => 
+          prevFiltered.filter(reservation => reservation.id !== bookingId)
+        );
         
-        // Refresh the data
+        // Show success message
+        showSuccessMessage('Réservation supprimée avec succès !');
+        
+        // Refresh the data from server to ensure consistency
         await loadReservations();
       } else {
         const errorData = await response.json();
@@ -292,6 +344,16 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
           </button>
         </div>
 
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mx-6 mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center space-x-2">
+              <CheckCircle2 className="w-5 h-5 text-green-600" />
+              <span className="text-green-800 font-medium">{successMessage}</span>
+            </div>
+          </div>
+        )}
+
         {/* Filter Section */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center space-x-4">
@@ -366,10 +428,18 @@ export default function ReservationModal({ isOpen, onClose, propertyId, property
                         </p>
                       </div>
                     </div>
-                    <Badge className={getStatusColor(reservation.status)}>
+                    <Badge className={getStatusColor(statusChangeFeedback[reservation.id] || reservation.status)}>
                       <div className="flex items-center space-x-1">
-                        {getStatusIcon(reservation.status)}
-                        <span>{getStatusText(reservation.status)}</span>
+                        {getStatusIcon(statusChangeFeedback[reservation.id] || reservation.status)}
+                        <span>
+                          {statusChangeFeedback[reservation.id] 
+                            ? `Mise à jour: ${getStatusText(statusChangeFeedback[reservation.id])}`
+                            : getStatusText(reservation.status)
+                          }
+                        </span>
+                        {statusChangeFeedback[reservation.id] && (
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                        )}
                       </div>
                     </Badge>
                   </div>
