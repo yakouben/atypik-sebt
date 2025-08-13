@@ -422,34 +422,20 @@ export function useAuth() {
 
   const getOwnerBookings = async (ownerId: string) => {
     try {
-      console.log('🔄 AUTH HOOK: Fetching owner bookings for:', ownerId);
-      
-      // Use our new API endpoint instead of direct Supabase query
-      const response = await fetch(`/api/bookings/owner?ownerId=${ownerId}`);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('❌ AUTH HOOK: API response error:', errorData);
-        throw new Error(errorData.error || 'Failed to fetch bookings');
-      }
-      
-      const result = await response.json();
-      console.log('✅ AUTH HOOK: API response received:', result);
-      console.log('📊 AUTH HOOK: Bookings count:', result.data?.length || 0);
-      
-      if (result.data) {
-        console.log('🏠 AUTH HOOK: Property names in response:', result.data.map(b => ({
-          bookingId: b.id,
-          propertyName: b.property?.name,
-          propertyLocation: b.property?.location,
-          hasImages: b.property?.images?.length > 0
-        })));
-      }
-      
-      return { data: result.data, error: null };
+      const { data, error } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          properties!inner(owner_id),
+          profiles!bookings_client_id_fkey(full_name, email)
+        `)
+        .eq('properties.owner_id', ownerId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return { data, error: null }
     } catch (error) {
-      console.error('❌ AUTH HOOK: Exception in getOwnerBookings:', error);
-      return { data: null, error };
+      return { data: null, error }
     }
   }
 
