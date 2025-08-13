@@ -199,23 +199,22 @@ export default function PropertyDetailPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation Bar with Return Button */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <div className="bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-100/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button
               onClick={() => router.back()}
-              className="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105"
+              className="flex items-center justify-center w-10 h-10 bg-gray-100/80 hover:bg-gray-200/90 text-gray-700 hover:text-gray-900 rounded-full transition-all duration-300 hover:scale-110 hover:shadow-lg backdrop-blur-sm"
             >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Retour</span>
+              <ChevronLeft className="w-5 h-5" />
             </button>
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#2C3E37] to-[#4A7C59] rounded-full flex items-center justify-center">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#2C3E37] to-[#4A7C59] rounded-full flex items-center justify-center shadow-lg">
                 <MapPin className="w-4 h-4 text-white" />
               </div>
-              <span className="text-lg font-bold text-[#2C3E37]">AtypikHouse</span>
+              <span className="text-lg font-bold text-[#2C3E37] bg-gradient-to-r from-[#2C3E37] to-[#4A7C59] bg-clip-text text-transparent">AtypikHouse</span>
             </div>
-            <div className="w-20"></div> {/* Spacer for centering */}
+            <div className="w-10"></div> {/* Spacer for centering */}
           </div>
         </div>
       </div>
