@@ -9,7 +9,6 @@ import {
   Bath, 
   Coffee, 
   Star, 
-  ArrowLeft,
   Users,
   Euro,
   ChevronLeft,
@@ -199,35 +198,6 @@ export default function PropertyDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header - Modern glassmorphism navbar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-b border-white/20 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-20">
-            {/* Back button with modern design */}
-            <button
-              onClick={() => router.back()}
-              className="group relative w-10 h-10 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-white/20"
-            >
-              <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6 text-[#333333] group-hover:text-[#2d5016] transition-colors" />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#2d5016]/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </button>
-            
-            {/* Property title for larger screens */}
-            <div className="hidden sm:block flex-1 text-center">
-              <h2 className="text-lg font-semibold text-[#333333] truncate max-w-md mx-auto">
-                {property?.name || 'Property Details'}
-              </h2>
-            </div>
-            
-            {/* Empty space for balance */}
-            <div className="w-10 h-10 sm:w-12 sm:h-12"></div>
-          </div>
-        </div>
-      </div>
-
-      {/* Spacer for fixed navbar */}
-      <div className="h-16 sm:h-20"></div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Image Gallery - Modern card design for small screens */}
         <div className="mb-6 sm:mb-8">
@@ -308,16 +278,6 @@ export default function PropertyDetailPage() {
                     
                     {/* Gradient overlay for better text readability */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
-                    
-                    {/* Navigation button only */}
-                    <div className="absolute top-4 left-4">
-                      <button
-                        onClick={() => router.back()}
-                        className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg"
-                      >
-                        <ArrowLeft className="w-5 h-5 text-[#333333]" />
-                      </button>
-                    </div>
                     
                     {/* Image counter */}
                     <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
