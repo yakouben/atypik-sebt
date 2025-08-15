@@ -208,12 +208,6 @@ export default function PropertyDetailPage() {
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#2C3E37] to-[#4A7C59] rounded-full flex items-center justify-center shadow-lg">
-                <MapPin className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-lg font-bold text-[#2C3E37] bg-gradient-to-r from-[#2C3E37] to-[#4A7C59] bg-clip-text text-transparent">AtypikHouse</span>
-            </div>
             <div className="w-10"></div> {/* Spacer for centering */}
           </div>
         </div>
