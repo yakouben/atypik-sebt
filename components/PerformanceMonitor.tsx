@@ -2,13 +2,6 @@
 
 import { useEffect } from 'react';
 
-// Extend the Window interface to include gtag
-declare global {
-  interface Window {
-    gtag?: (command: string, targetId: string, config?: any) => void;
-  }
-}
-
 export default function PerformanceMonitor() {
   useEffect(() => {
     // Only run in production

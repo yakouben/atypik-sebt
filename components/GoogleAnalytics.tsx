@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 
 declare global {
   interface Window {
@@ -10,6 +10,7 @@ declare global {
       targetId: string,
       config?: Record<string, any>
     ) => void;
+    dataLayer: any[];
   }
 }
 
@@ -17,7 +18,7 @@ interface GoogleAnalyticsProps {
   GA_MEASUREMENT_ID: string;
 }
 
-export default function GoogleAnalytics({ GA_MEASUREMENT_ID }: GoogleAnalyticsProps) {
+function GoogleAnalyticsInner({ GA_MEASUREMENT_ID }: GoogleAnalyticsProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -57,6 +58,14 @@ export default function GoogleAnalytics({ GA_MEASUREMENT_ID }: GoogleAnalyticsPr
         }}
       />
     </>
+  );
+}
+
+export default function GoogleAnalytics(props: GoogleAnalyticsProps) {
+  return (
+    <Suspense fallback={null}>
+      <GoogleAnalyticsInner {...props} />
+    </Suspense>
   );
 }
 
