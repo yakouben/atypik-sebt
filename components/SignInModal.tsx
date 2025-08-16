@@ -186,10 +186,12 @@ export default function SignInModal({ isOpen, onClose, initialStep = 'login', in
             <div className="max-w-md mx-auto w-full">
               {/* Header */}
               <div className="text-center mb-6 sm:mb-8">
-                <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
-                  <div className="w-8 h-8 sm:w-12 sm:h-12 bg-green-600 rounded-full flex items-center justify-center">
-                    <TreePine className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-                  </div>
+                <div className="flex items-center justify-center  sm:space-x-2 mb-4 sm:mb-6">
+                  <img 
+                    src="/logo-svg.png" 
+                    alt="AtypikHouse Logo" 
+                    className="w-20 h-20 sm:w-20 sm:h-20 object-contain"
+                  />
                   <span className="text-lg sm:text-2xl font-bold text-gray-900">AtypikHouse</span>
                 </div>
                 

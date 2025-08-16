@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/components/AuthProvider';
 import PerformanceMonitor from '@/components/PerformanceMonitor';
 import PerformanceOptimizer from '@/components/PerformanceOptimizer';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -104,7 +105,7 @@ export default function RootLayout({
     "name": "AtypikHouse",
     "description": "Hebergements insolites et ecoresponsables en France et en Europe",
     "url": "https://atypikhouse.com",
-    "logo": "https://atypikhouse.com/logo.png",
+    "logo": "https://atypikhouse.com/logo-white.png",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Pierrefonds",
@@ -149,7 +150,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
         {/* Favicon */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/logo-white.png" sizes="32x32 48x48" />
+        
+        {/* Google Analytics */}
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
         
         {/* Structured Data */}
         <script

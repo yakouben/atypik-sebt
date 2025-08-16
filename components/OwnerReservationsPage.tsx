@@ -267,9 +267,11 @@ export default function OwnerReservationsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#2C3E37] to-[#4A7C59] rounded-xl flex items-center justify-center">
-                <Home className="w-6 h-6 text-white" />
-              </div>
+              <img 
+                src="/logo-svg.png" 
+                alt="AtypikHouse Logo" 
+                className="w-12 h-12 object-contain"
+              />
               <div>
                 <h1 className="text-xl font-bold text-[#2C3E37]">
                   Dashboard

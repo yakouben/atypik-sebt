@@ -417,10 +417,12 @@ export default function GlampingGuestExperience() {
       <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#2C3E37] to-[#4A7C59] rounded-xl flex items-center justify-center">
-                <Home className="w-6 h-6 text-white" />
-              </div>
+            <div className="flex items-center">
+              <img 
+                src="/logo-svg.png" 
+                alt="AtypikHouse Logo" 
+                className="w-16 h-16 object-contain"
+              />
               <div>
                 <h1 className="text-xl font-bold text-[#2C3E37]">
                   Dashboard 
@@ -446,12 +448,21 @@ export default function GlampingGuestExperience() {
         <div className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-lg">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div className="mb-4 sm:mb-0">
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2">
-                {getGreeting()}, {userProfile?.full_name?.split(' ')[0] || 'Client'}!
-              </h2>
-              <p className="text-green-100 text-lg">
-                Découvrez des hébergements uniques et éco-responsables
-              </p>
+              <div className="flex items-center mb-4">
+                <img 
+                  src="/logo-white.png" 
+                  alt="AtypikHouse Logo" 
+                  className="w-20 h-20 object-contain"
+                />
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold mb-2">
+                    {getGreeting()}, {userProfile?.full_name?.split(' ')[0] || 'Client'}!
+                  </h2>
+                  <p className="text-green-100 text-lg">
+                    Découvrez des hébergements uniques et éco-responsables
+                  </p>
+                </div>
+              </div>
           </div>
             <button className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-medium transition-all hover:bg-white/30 hover:scale-105 shadow-lg">
               Commencer à explorer

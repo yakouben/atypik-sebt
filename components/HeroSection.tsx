@@ -2,6 +2,7 @@
 
 import { TreePine, ArrowUpRight, MessageCircle, Phone, MapPin, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { trackEvent } from './GoogleAnalytics';
 
 interface HeroSectionProps {
   onReserverClick?: () => void;
@@ -37,6 +38,7 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
   ];
 
   const scrollToFooter = () => {
+    trackEvent('click', 'navigation', 'scroll_to_footer');
     const footer = document.querySelector('footer');
     if (footer) {
       footer.scrollIntoView({ behavior: 'smooth' });
@@ -56,16 +58,19 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
 
   const nextImage = () => {
     setIsAutoScrolling(false); // Pause auto-scroll on manual interaction
+    trackEvent('interaction', 'carousel', 'next_image');
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
   };
 
   const prevImage = () => {
     setIsAutoScrolling(false); // Pause auto-scroll on manual interaction
+    trackEvent('interaction', 'carousel', 'prev_image');
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
   const goToImage = (index: number) => {
     setIsAutoScrolling(false); // Pause auto-scroll on manual interaction
+    trackEvent('interaction', 'carousel', `go_to_image_${index}`);
     setCurrentImageIndex(index);
   };
 
@@ -79,6 +84,31 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
 
     return () => clearTimeout(timeout);
   }, [isAutoScrolling]);
+
+  const handleReserverClick = () => {
+    trackEvent('click', 'cta_button', 'reserver_main_hero');
+    onReserverClick?.();
+  };
+
+  const handleAddPropertyClick = () => {
+    trackEvent('click', 'cta_button', 'add_property_main_hero');
+    onAddPropertyClick?.();
+  };
+
+  const handleConnexionClick = () => {
+    trackEvent('click', 'cta_button', 'connexion_main_hero');
+    onConnexionClick?.();
+  };
+
+  const handleInscriptionClick = () => {
+    trackEvent('click', 'cta_button', 'inscription_main_hero');
+    onInscriptionClick?.();
+  };
+
+  const handleCategoryClick = (category: string) => {
+    trackEvent('click', 'property_category', category);
+    // Add your category navigation logic here
+  };
 
   return (
     <section className="relative min-h-screen overflow-hidden">
@@ -104,10 +134,12 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
                 {/* Left Side - Logo and Navigation */}
                 <div className="flex items-center space-x-6 lg:space-x-8">
                   {/* Logo */}
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center">
-                      <TreePine className="w-4 h-4 text-white" />
-                    </div>
+                  <div className="flex items-center ">
+                    <img 
+                      src="/logo-svg.png" 
+                      alt="AtypikHouse Logo" 
+                      className="w-20 h-20 object-contain"
+                    />
                     <span className="text-xl font-bold text-gray-900">AtypikHouse</span>
                   </div>
                   
@@ -115,7 +147,13 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
                   <nav className="hidden lg:flex items-center space-x-6">
                     <a href="#" className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white px-4 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-lg">Accueil</a>
                     <button onClick={scrollToFooter} className="text-gray-700 border border-gray-300 px-4 py-2 rounded-full font-medium hover:bg-gray-50 transition-colors">Contact</button>
-                    <a href="/blog" className="text-gray-700 border border-gray-300 px-4 py-2 rounded-full font-medium hover:bg-gray-50 transition-colors">Blog</a>
+                    <a 
+                      href="/blog" 
+                      onClick={() => trackEvent('click', 'navigation', 'blog_link')}
+                      className="text-gray-700 border border-gray-300 px-4 py-2 rounded-full font-medium hover:bg-gray-50 transition-colors"
+                    >
+                      Blog
+                    </a>
                   </nav>
                 </div>
                 
@@ -155,15 +193,21 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
                   <nav className="space-y-3">
                     <a href="#" className="block text-gray-700 font-medium">Accueil</a>
                     <button onClick={scrollToFooter} className="block w-full text-left text-gray-700 font-medium">Contact</button>
-                    <a href="/blog" className="block text-gray-700 font-medium">Blog</a>
+                    <a 
+                      href="/blog" 
+                      onClick={() => trackEvent('click', 'navigation', 'blog_link_mobile')}
+                      className="block text-gray-700 font-medium"
+                    >
+                      Blog
+                    </a>
                     <button 
-                      onClick={onConnexionClick}
+                      onClick={handleConnexionClick}
                       className="block w-full text-left text-gray-700 font-medium"
                     >
                       Connexion
                     </button>
                     <button 
-                      onClick={onInscriptionClick}
+                      onClick={handleInscriptionClick}
                       className="block w-full text-left text-gray-700 font-medium"
                     >
                       Inscription
@@ -198,12 +242,15 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
                 
                 <div className="flex items-center justify-center space-x-3 pt-2">
                   <button 
-                    onClick={onReserverClick}
+                    onClick={handleReserverClick}
                     className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white px-8 py-4 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#4A7C59]/25 text-sm sm:text-base w-full max-w-xs"
                   >
                     Réserver maintenant
                   </button>
-                  <button className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+                  <button 
+                    onClick={() => trackEvent('click', 'cta_button', 'arrow_right_mobile')}
+                    className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  >
                     <ArrowUpRight className="w-4 h-4 text-gray-600" />
                   </button>
                 </div>
@@ -299,12 +346,15 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
                   </p>
                   <div className="flex items-center space-x-3">
                     <button 
-                      onClick={onReserverClick}
+                      onClick={handleReserverClick}
                       className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#4A7C59]/25 text-sm sm:text-base"
                     >
                       Réserver maintenant
                     </button>
-                    <button className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+                    <button 
+                      onClick={() => trackEvent('click', 'cta_button', 'arrow_right_desktop')}
+                      className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                    >
                       <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
                     </button>
                   </div>
@@ -376,7 +426,10 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
                     <div></div>
                     <div className="flex items-center space-x-2">
                       <span className="text-xs sm:text-sm font-medium text-gray-600">Plus sur nos expériences</span>
-                      <button className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+                      <button 
+                        onClick={() => trackEvent('click', 'cta_button', 'more_experiences')}
+                        className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow"
+                      >
                         <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-600" />
                       </button>
                     </div>

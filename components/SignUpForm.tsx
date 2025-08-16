@@ -94,9 +94,11 @@ export default function SignUpForm() {
           <div className="w-full lg:w-2/3 p-8 lg:p-12">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#2C3E37] to-[#4A7C59] rounded-xl flex items-center justify-center">
-                  <TreePine className="w-6 h-6 text-white" />
-                </div>
+                <img 
+                  src="/logo-svg.png" 
+                  alt="AtypikHouse Logo" 
+                  className="w-12 h-12 object-contain"
+                />
                 <span className="text-2xl font-bold text-[#2C3E37]">AtypikHouse</span>
               </div>
               <button 

@@ -488,10 +488,12 @@ export default function Home() {
           <div className="space-y-8">
             {/* Logo and Description - Full width */}
             <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <TreePine className="w-4 h-4 text-white" />
-                </div>
+              <div className="flex items-center">
+                <img 
+                  src="/logo-white.png" 
+                  alt="AtypikHouse Logo" 
+                  className="w-20 h-20 object-contain"
+                />
                 <span className="text-xl font-bold">AtypikHouse</span>
               </div>
               <p className="text-green-100 text-sm leading-relaxed">

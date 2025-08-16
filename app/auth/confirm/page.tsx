@@ -108,9 +108,11 @@ export default function EmailConfirmationPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#2C3E37] to-[#4A7C59] rounded-xl flex items-center justify-center">
-              <TreePine className="w-6 h-6 text-white" />
-            </div>
+            <img 
+              src="/logo-white.png" 
+              alt="AtypikHouse Logo" 
+              className="w-20 h-20 object-contain"
+            />
             <span className="text-xl font-bold text-[#2C3E37]">AtypikHouse</span>
           </div>
           <button 
@@ -125,9 +127,11 @@ export default function EmailConfirmationPage() {
         <div className="text-center">
           {/* Icons */}
           <div className="flex flex-col items-center space-y-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#2C3E37] to-[#4A7C59] rounded-full flex items-center justify-center">
-              <TreePine className="w-8 h-8 text-white" />
-            </div>
+            <img 
+              src="/logo-svg.png" 
+              alt="AtypikHouse Logo" 
+              className="w-20 h-20 object-contain"
+            />
             {confirmationStatus === 'loading' && (
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
