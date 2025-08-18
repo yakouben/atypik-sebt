@@ -48,14 +48,14 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://atypikhouse.com'),
+  metadataBase: new URL('https://www.dsp4-ddm-023dis3-4-g9.fr'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     title: 'AtypikHouse - Hébergements insolites et éco-responsables',
     description: 'Découvrez des hébergements uniques en France et en Europe : cabanes dans les arbres, yourtes traditionnelles et cabanes flottantes.',
-    url: 'https://atypikhouse.com',
+    url: 'https://www.dsp4-ddm-023dis3-4-g9.fr',
     siteName: 'AtypikHouse',
     images: [
       {
@@ -104,8 +104,8 @@ export default function RootLayout({
     "@type": "TravelAgency",
     "name": "AtypikHouse",
     "description": "Hebergements insolites et ecoresponsables en France et en Europe",
-    "url": "https://atypikhouse.com",
-    "logo": "https://atypikhouse.com/logo-white.png",
+    "url": "https://www.dsp4-ddm-023dis3-4-g9.fr",
+    "logo": "https://www.dsp4-ddm-023dis3-4-g9.fr/logo-white.png",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Pierrefonds",
@@ -118,8 +118,8 @@ export default function RootLayout({
       "availableLanguage": "French"
     },
     "sameAs": [
-      "https://facebook.com/atypikhouse",
-      "https://instagram.com/atypikhouse"
+      "https://facebook.com/dsp4-ddm-023dis3-4-g9",
+      "https://instagram.com/dsp4-ddm-023dis3-4-g9"
     ],
     "areaServed": [
       {
