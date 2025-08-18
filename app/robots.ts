@@ -5,8 +5,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/private/', '/admin/'],
+      disallow: ['/dashboard/', '/host/', '/auth/'],
     },
-    sitemap: 'https://atypikhouse.com/sitemap.xml',
+    sitemap: 'https://www.dsp4-ddm-023dis3-4-g9.fr/sitemap.xml',
   }
 } 
