@@ -507,11 +507,9 @@ export default function Home() {
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Liens rapides</h3>
                 <div className="space-y-2">
-                  <a href="#" className="block text-green-100 hover:text-white transition-colors text-sm">Accueil</a>
-                  <a href="#" className="block text-green-100 hover:text-white transition-colors text-sm">Hébergements</a>
-                  <a href="/blog" className="block text-green-100 hover:text-white transition-colors text-sm">Blog</a>
-                  <a href="#" className="block text-green-100 hover:text-white transition-colors text-sm">À propos</a>
-                  <a href="#" className="block text-green-100 hover:text-white transition-colors text-sm">Contact</a>
+                  <a href="/" className="block text-green-100 hover:text-white transition-colors text-sm hover:scale-105 transform duration-200">Accueil</a>
+                  <a href="/blog" className="block text-green-100 hover:text-white transition-colors text-sm hover:scale-105 transform duration-200">Blog</a>
+                  <a href="/qui-sommes-nous" className="block text-green-100 hover:text-white transition-colors text-sm hover:scale-105 transform duration-200">CGU</a>
                 </div>
               </div>
 
@@ -519,9 +517,9 @@ export default function Home() {
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Contact</h3>
                 <div className="space-y-2 text-sm text-green-100">
-                  <p>contact@atypikhouse.com</p>
-                  <p>+33 6 12 34 56 78</p>
-                  <p>Europe</p>
+                  <p className="hover:text-white transition-colors cursor-pointer">contact@dsp4-ddm-023dis3-4-g9.fr</p>
+                  <p className="hover:text-white transition-colors cursor-pointer">+33 6 12 34 56 78</p>
+                  <p className="hover:text-white transition-colors cursor-pointer">Europe</p>
                 </div>
               </div>
 
@@ -532,9 +530,13 @@ export default function Home() {
 
           {/* Bottom Bar */}
           <div className="border-t border-white/20 mt-8 pt-8 text-center">
-            <p className="text-green-100 text-sm">
-              © 2025 AtypikHouse. Tous droits réservés.
-            </p>
+            <div className="space-y-4">
+              <p className="text-green-100 text-sm leading-relaxed">
+                Copyright © 2025 AtypikHouse<br />
+                Tous droits réservés. Mentions légales.<br />
+                Ce site est un projet étudiant fictif pour lequel aucun réel achat ou aucune réservation ne pourrait être effectué.
+              </p>
+            </div>
           </div>
         </div>
       </footer>
