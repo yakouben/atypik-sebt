@@ -35,6 +35,11 @@ interface Property {
   is_available: boolean;
   created_at: string;
   updated_at: string;
+  owner_id?: string;
+  profiles?: {
+    full_name: string;
+    email: string;
+  };
 }
 
 export default function PropertyDetailPage() {
@@ -123,6 +128,26 @@ export default function PropertyDetailPage() {
       
       if (response.ok && result.data) {
         console.log('✅ Property loaded successfully:', result.data);
+        console.log('🔍 Owner ID:', result.data.owner_id);
+        
+        // Always fetch owner profile information
+        if (result.data.owner_id) {
+          try {
+            console.log('🔍 Fetching owner profile for ID:', result.data.owner_id);
+            const ownerResponse = await fetch(`/api/profiles/${result.data.owner_id}`);
+            const ownerResult = await ownerResponse.json();
+            
+            if (ownerResponse.ok && ownerResult.data) {
+              result.data.profiles = ownerResult.data;
+              console.log('✅ Owner profile fetched:', ownerResult.data);
+            } else {
+              console.error('❌ Failed to fetch owner profile:', ownerResult.error);
+            }
+          } catch (ownerError) {
+            console.error('❌ Error fetching owner profile:', ownerError);
+          }
+        }
+        
         setProperty(result.data);
       } else {
         console.error('❌ Error loading property:', result.error);
@@ -423,21 +448,6 @@ export default function PropertyDetailPage() {
               </div>
             </div>
 
-            {/* Host Information */}
-            <div className="flex items-center justify-between mb-6 p-4 bg-gray-50 rounded-2xl">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-[#2d5016] rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold text-lg">
-                    {userProfile?.full_name?.charAt(0) || 'H'}
-                  </span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-[#333333]">{userProfile?.full_name || 'Host'}</h3>
-                  <p className="text-sm text-[#696969]">Owner</p>
-                </div>
-              </div>
-            </div>
-
             {/* Overview Section */}
             <div className="mb-6">
               <h3 className="text-lg font-bold text-[#333333] mb-3">Overview</h3>
@@ -478,11 +488,9 @@ export default function PropertyDetailPage() {
             {property.name}
           </h1>
           
-          {/* Property type and host information */}
+          {/* Property type */}
           <div className="flex items-center space-x-2 mb-3">
             <span className="text-[#333333] font-medium">Entire home</span>
-            <span className="text-[#696969]">•</span>
-            <span className="text-[#333333]">Hosted by {userProfile?.full_name?.split(' ')[0] || 'Host'}</span>
           </div>
           
           {/* Location with pin icon */}
