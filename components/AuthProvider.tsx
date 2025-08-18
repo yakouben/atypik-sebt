@@ -28,15 +28,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isInitialized, setIsInitialized] = useState(false);
   const [lastRedirect, setLastRedirect] = useState<string>('');
+  const [isProcessingAuth, setIsProcessingAuth] = useState(false);
+
+  // Define public routes that should never trigger authentication logic
+  const publicRoutes = ['/', '/blog', '/qui-sommes-nous', '/properties'];
+  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
 
   useEffect(() => {
+    console.log('🔍 AuthProvider - auth state changed:', {
+      loading: auth.loading,
+      user: auth.user?.id,
+      userProfile: auth.userProfile?.id,
+      userType: auth.userProfile?.user_type,
+      pathname,
+      isProcessingAuth,
+      isPublicRoute
+    });
+
     if (!auth.loading) {
       setIsInitialized(true);
+      console.log('✅ AuthProvider - initialized, user:', auth.user?.id);
       
       // Handle authentication state changes with optimized redirects
       if (auth.user && auth.userProfile) {
         // User is authenticated and has a profile
         const userType = auth.userProfile.user_type;
+        console.log('✅ AuthProvider - user authenticated with profile, type:', userType);
         
         // Don't redirect if already on dashboard pages or auth pages
         const isOnDashboard = pathname.includes('/dashboard');
@@ -47,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!isOnDashboard && !isOnAuthPage && !isOnConfirmPage && !isOnPropertyPage) {
           // Prevent rapid redirects
           const redirectPath = userType === 'owner' ? '/dashboard/owner' : '/dashboard/client';
+          console.log('🔄 AuthProvider - redirecting to:', redirectPath);
           if (lastRedirect !== redirectPath) {
             setLastRedirect(redirectPath);
             router.push(redirectPath);
@@ -54,15 +72,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else if (auth.user && !auth.userProfile) {
         // User is authenticated but no profile - wait for profile to load
-        // Don't redirect yet
+        console.log('⏳ AuthProvider - user authenticated but no profile yet, waiting...');
+        // Don't redirect yet - let the profile load
+        setIsProcessingAuth(true);
       } else {
         // User is not authenticated - only redirect if necessary
+        console.log('❌ AuthProvider - user not authenticated');
         const isOnAuthPage = pathname.includes('/auth');
         const isOnHomePage = pathname === '/';
         const isOnBlogPage = pathname === '/blog';
+        const isOnQuiSommesPage = pathname === '/qui-sommes-nous';
         
-        if (!isOnAuthPage && !isOnHomePage && !isOnBlogPage) {
+        if (!isOnAuthPage && !isOnHomePage && !isOnBlogPage && !isOnQuiSommesPage) {
           const redirectPath = '/';
+          console.log('🔄 AuthProvider - redirecting to home:', redirectPath);
           if (lastRedirect !== redirectPath) {
             setLastRedirect(redirectPath);
             router.push(redirectPath);
@@ -70,7 +93,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, [auth.user, auth.userProfile, auth.loading, router, pathname, lastRedirect]);
+  }, [auth.user, auth.userProfile, auth.loading, router, pathname, lastRedirect, isPublicRoute, isProcessingAuth]);
+
+  // Additional effect to handle profile loading completion
+  useEffect(() => {
+    if (isProcessingAuth && auth.user && auth.userProfile) {
+      console.log('✅ AuthProvider - profile loaded, processing redirect');
+      setIsProcessingAuth(false);
+      
+      const userType = auth.userProfile.user_type;
+      const redirectPath = userType === 'owner' ? '/dashboard/owner' : '/dashboard/client';
+      
+      // Always redirect to dashboard when profile is loaded, regardless of current route
+      console.log('🔄 AuthProvider - final redirect to:', redirectPath);
+      setLastRedirect(redirectPath);
+      router.push(redirectPath);
+    }
+  }, [isProcessingAuth, auth.user, auth.userProfile, router, lastRedirect]);
+
+  // Force redirect to dashboard if user is authenticated and on a public route
+  useEffect(() => {
+    if (auth.user && auth.userProfile && isPublicRoute) {
+      const userType = auth.userProfile.user_type;
+      const redirectPath = userType === 'owner' ? '/dashboard/owner' : '/dashboard/client';
+      
+      console.log('🔄 AuthProvider - forcing redirect from public route to dashboard:', redirectPath);
+      if (lastRedirect !== redirectPath) {
+        setLastRedirect(redirectPath);
+        router.push(redirectPath);
+      }
+    }
+  }, [auth.user, auth.userProfile, isPublicRoute, router, lastRedirect]);
 
   const value = {
     user: auth.user,
