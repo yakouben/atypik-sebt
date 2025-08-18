@@ -28,10 +28,12 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleInputChange = (field: keyof LoginData, value: string) => {
     setLoginData(prev => ({ ...prev, [field]: value }));
     setError('');
+    setSuccess('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,19 +42,29 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      // Provide immediate feedback
+      console.log('🔄 LoginForm - Attempting sign in...');
       const result = await signIn(loginData.email, loginData.password);
 
       if (result.error) {
+        console.error('❌ LoginForm - Sign in failed:', result.error);
         setError(result.error.message || result.error);
         setLoading(false);
       } else {
-        // Success - show immediate feedback, don't wait for redirect
-        console.log('Login successful');
+        console.log('✅ LoginForm - Sign in successful, waiting for redirect...');
         // Keep loading state until redirect happens
-        // This prevents the button from flickering
+        // The AuthProvider will handle the redirect once the profile is loaded
+        setError('');
+        setSuccess('Connexion réussie ! Redirection vers votre tableau de bord...');
+        
+        // Add a small delay to show success message before redirect
+        setTimeout(() => {
+          if (loading) {
+            setLoading(false);
+          }
+        }, 2000);
       }
     } catch (error) {
+      console.error('❌ LoginForm - Exception during sign in:', error);
       setError('Une erreur est survenue lors de la connexion');
       setLoading(false);
     }
@@ -132,6 +144,13 @@ export default function LoginForm() {
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                   <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
+
+              {/* Success Message */}
+              {success && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                  <p className="text-green-600 text-sm">{success}</p>
                 </div>
               )}
 
