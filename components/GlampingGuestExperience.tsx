@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { useAuthContext } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 interface Property {
   id: string;
@@ -98,25 +99,96 @@ export default function GlampingGuestExperience() {
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [realTimeActive, setRealTimeActive] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [clickedPropertyId, setClickedPropertyId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const propertiesPerPage = 4;
   
   // Real-time status tracking
-  const [statusNotifications, setStatusNotifications] = useState<{[key: string]: string}>({});
-  const [showStatusAlert, setShowStatusAlert] = useState(false);
-  const [lastStatusUpdate, setLastStatusUpdate] = useState<Date>(new Date());
 
-  // Success message state for booking updates
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-
+  // Real-time subscription for bookings updates
   useEffect(() => {
-    loadProperties();
-    if (userProfile?.id) {
+    if (!userProfile?.id) return;
+
+    setRealTimeActive(true);
+
+    // Subscribe to changes in the bookings table for this client
+    const subscription = supabase
+      .channel(`client-bookings-${userProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings',
+          filter: `client_id=eq.${userProfile.id}`
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            // New booking created - add it immediately to local state
+            const newBooking = payload.new as any;
+            if (newBooking) {
+              // Transform the data to match our interface
+              const transformedBooking: Booking = {
+                id: newBooking.id,
+                check_in_date: newBooking.check_in_date,
+                check_out_date: newBooking.check_out_date,
+                total_price: newBooking.total_price,
+                status: newBooking.status,
+                guest_count: newBooking.guest_count,
+                special_requests: newBooking.special_requests,
+                full_name: newBooking.full_name,
+                email_or_phone: newBooking.email_or_phone,
+                travel_type: newBooking.travel_type,
+                created_at: newBooking.created_at,
+                properties: {
+                  name: newBooking.property_name || 'Nouvelle propriété',
+                  location: newBooking.property_location || 'Localisation à confirmer',
+                  images: newBooking.property_images || []
+                }
+              };
+              
+              // Add to local state immediately
+              setBookings(prev => [transformedBooking, ...prev]);
+              
+              // Also refresh from server to get complete data
+              setTimeout(() => {
+                loadBookings();
+              }, 1000);
+            }
+          } else if (payload.eventType === 'UPDATE') {
+            // Booking updated (status change, etc.)
+            loadBookings();
+          } else if (payload.eventType === 'DELETE') {
+            // Booking deleted
+            loadBookings();
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          setRealTimeActive(true);
+        } else if (status === 'CHANNEL_ERROR') {
+          setRealTimeActive(false);
+        }
+      });
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+      setRealTimeActive(false);
+    };
+  }, [userProfile?.id]);
+
+  // Load initial data
+  useEffect(() => {
+    if (userProfile) {
+      loadProperties();
       loadBookings();
+      setLoading(false);
     }
-  }, [selectedCategory, userProfile]);
+  }, [userProfile]);
 
   useEffect(() => {
     filterBookings();
@@ -127,7 +199,19 @@ export default function GlampingGuestExperience() {
     if (userProfile?.id) {
       const interval = setInterval(() => {
         checkForStatusUpdates();
-      }, 10000); // Check every 10 seconds for faster updates
+      }, 5000); // Check every 5 seconds for faster updates
+
+      return () => clearInterval(interval);
+    }
+  }, [userProfile]);
+
+  // Additional real-time check for new bookings
+  useEffect(() => {
+    if (userProfile?.id) {
+      const interval = setInterval(() => {
+        // Check for new bookings more frequently
+        loadBookings();
+      }, 3000); // Check every 3 seconds for new bookings
 
       return () => clearInterval(interval);
     }
@@ -153,17 +237,17 @@ export default function GlampingGuestExperience() {
             const statusText = getStatusText(newBooking.status);
             const propertyName = newBooking.properties.name;
             
-            setStatusNotifications(prev => ({
-              ...prev,
-              [newBooking.id]: `${propertyName}: ${statusText}`
-            }));
+            // setStatusNotifications(prev => ({
+            //   ...prev,
+            //   [newBooking.id]: `${propertyName}: ${statusText}`
+            // }));
             
-            setShowStatusAlert(true);
-            setLastStatusUpdate(new Date());
+            // setShowStatusAlert(true);
+            // setLastStatusUpdate(new Date());
             
             // Auto-hide notification after 5 seconds
             setTimeout(() => {
-              setShowStatusAlert(false);
+              // setShowStatusAlert(false);
             }, 5000);
           }
         });
@@ -209,13 +293,13 @@ export default function GlampingGuestExperience() {
       
       if (response.ok && result.data) {
         setBookings(result.data);
-        // Remove console.log for better performance
+        setLastUpdated(new Date()); // Update timestamp
       } else {
-        console.error('Error loading bookings:', result.error);
+        console.error('❌ Error loading bookings:', result.error);
         setBookings([]);
       }
     } catch (error) {
-      console.error('Error loading bookings:', error);
+      console.error('❌ Exception loading bookings:', error);
       setBookings([]);
     } finally {
       setBookingsLoading(false);
@@ -834,23 +918,15 @@ export default function GlampingGuestExperience() {
             </div>
 
             {/* Enhanced Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Historique des réservations</h2>
-                <p className="text-gray-600 mt-1">Gérez et suivez toutes vos réservations</p>
-                {/* Live Status Indicator */}
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-green-600 font-medium">Mise à jour en temps réel active</span>
-                </div>
-              </div>
-              <button 
-                onClick={loadBookings}
-                className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 flex items-center gap-2"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Actualiser
-              </button>
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Historique des réservations
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Gérez et suivez toutes vos réservations
+              </p>
+              
+              
             </div>
 
             {/* Enhanced Filters and Search */}
@@ -931,11 +1007,11 @@ export default function GlampingGuestExperience() {
                             </div>
                             <div className="flex items-center gap-2">
                                 {/* Real-time status indicator */}
-                                {statusNotifications[booking.id] && (
+                                {/* {statusNotifications[booking.id] && (
                                   <div className="animate-pulse">
                                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                                   </div>
-                                )}
+                                )} */}
                                 <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${getStatusColor(booking.status)}`}>
                                   {getStatusIcon(booking.status)}
                                   <span className="text-sm font-medium capitalize">
@@ -1184,62 +1260,6 @@ export default function GlampingGuestExperience() {
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Success Message */}
-      {showSuccessMessage && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4 shadow-lg max-w-md">
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-green-800">{successMessage}</p>
-              </div>
-              <button
-                onClick={() => setShowSuccessMessage(false)}
-                className="flex-shrink-0 text-green-400 hover:text-green-600 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Real-time Status Update Notifications */}
-      {showStatusAlert && Object.keys(statusNotifications).length > 0 && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 animate-bounce">
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 shadow-lg max-w-md">
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-blue-600" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-blue-800 mb-1">Mise à jour en temps réel !</p>
-                <div className="space-y-1">
-                  {Object.values(statusNotifications).map((notification, index) => (
-                    <p key={index} className="text-xs text-blue-700">{notification}</p>
-                  ))}
-                </div>
-                <p className="text-xs text-blue-600 mt-2">
-                  Dernière mise à jour: {lastStatusUpdate.toLocaleTimeString('fr-FR')}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowStatusAlert(false)}
-                className="flex-shrink-0 text-blue-400 hover:text-blue-600 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
             </div>
           </div>
         </div>
