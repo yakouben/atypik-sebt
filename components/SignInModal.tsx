@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { X, Eye, EyeOff, Mail, Lock, User, MapPin, TreePine, Users, Home, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { trackFormSubmit } from '@/components/GoogleAnalytics';
 import { useAuthContext } from './AuthProvider';
+import Breadcrumb, { generateBreadcrumbs } from '@/components/Breadcrumb';
 
 interface SignInModalProps {
   isOpen: boolean;
@@ -77,6 +79,9 @@ export default function SignInModal({ isOpen, onClose, initialStep = 'login', in
 
     try {
       if (currentStep === 'login') {
+        // Track form submission
+        trackFormSubmit('login_form');
+        
         const { error } = await signIn(formData.email, formData.password);
         if (error) {
           setError(error.message);
@@ -96,6 +101,9 @@ export default function SignInModal({ isOpen, onClose, initialStep = 'login', in
           }, 1500);
         }
       } else if (currentStep === 'signup' && userType) {
+        // Track form submission
+        trackFormSubmit('signup_form');
+        
         const userData = {
           full_name: formData.fullName,
           user_type: userType,
@@ -186,6 +194,11 @@ export default function SignInModal({ isOpen, onClose, initialStep = 'login', in
             <div className="max-w-md mx-auto w-full">
               {/* Header */}
               <div className="text-center mb-6 sm:mb-8">
+                {/* Breadcrumb Navigation */}
+                <div className="mb-4 sm:mb-6">
+                  <Breadcrumb items={generateBreadcrumbs(currentStep === 'login' ? 'login' : 'register')} />
+                </div>
+                
                 <div className="flex items-center justify-center  sm:space-x-2 mb-4 sm:mb-6">
                   <img 
                     src="/logo-svg.png" 
