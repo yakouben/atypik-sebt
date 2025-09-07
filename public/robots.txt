@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.dsp4-ddm-023dis3-4-g9.fr/sitemap.xml
+
+# Disallow admin and private areas
+Disallow: /dashboard/
+Disallow: /auth/
+Disallow: /api/
+
+# Allow public pages
+Allow: /
+Allow: /blog
+Allow: /contact
+Allow: /sitemap
+Allow: /qui-sommes-nous
+Allow: /cgv
