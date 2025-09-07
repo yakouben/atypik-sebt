@@ -1,8 +1,11 @@
 "use client";
 
-import { TreePine, ArrowUpRight, MessageCircle, Phone, MapPin, Play, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TreePine, ArrowUpRight, MessageCircle, Phone, MapPin, Play, ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { trackEvent } from './GoogleAnalytics';
+import { trackEvent, trackCtaClick } from './GoogleAnalytics';
+import ReCaptchaModal from './ReCaptchaModal';
+import { useRouter } from 'next/navigation';
+import SearchWidget from './SearchWidget';
 
 interface HeroSectionProps {
   onReserverClick?: () => void;
@@ -15,6 +18,13 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
+  const [showReCaptchaModal, setShowReCaptchaModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [showSearchWidget, setShowSearchWidget] = useState(false);
+  const router = useRouter();
 
   const images = [
     {
@@ -37,12 +47,16 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
     }
   ];
 
-  const scrollToFooter = () => {
-    trackEvent('click', 'navigation', 'scroll_to_footer');
-    const footer = document.querySelector('footer');
-    if (footer) {
-      footer.scrollIntoView({ behavior: 'smooth' });
-    }
+  const handleContactClick = () => {
+    console.log('🔍 Contact button clicked, opening reCAPTCHA modal...');
+    trackEvent('click', 'navigation', 'recaptcha_modal_open');
+    setShowReCaptchaModal(true);
+    console.log('🔍 Modal state set to true');
+  };
+
+  const handleReCaptchaSuccess = () => {
+    trackEvent('click', 'navigation', 'recaptcha_verification_success');
+    window.location.href = '/contact';
   };
 
   // Auto-scroll functionality
@@ -87,6 +101,7 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
 
   const handleReserverClick = () => {
     trackEvent('click', 'cta_button', 'reserver_main_hero');
+    trackCtaClick('reserver', 'hero_section');
     onReserverClick?.();
   };
 
@@ -104,6 +119,86 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
     trackEvent('click', 'cta_button', 'inscription_main_hero');
     onInscriptionClick?.();
   };
+
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchQuery(query);
+    
+    try {
+      // First, let's debug what's in the database
+      const debugResponse = await fetch('/api/debug/properties');
+      const debugData = await debugResponse.json();
+      console.log('🔍 Debug data:', debugData);
+
+      const response = await fetch(`/api/properties/simple-search?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        setSearchResults(data.data || []);
+        setShowSearchResults(true);
+        trackEvent('search', 'properties', query);
+        console.log('✅ Search results:', data.data);
+      } else {
+        console.error('❌ Erreur lors de la recherche:', data.error);
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de la recherche:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSearch(searchQuery);
+  };
+
+  const handlePropertyClick = (propertyId: string) => {
+    trackEvent('click', 'search_result', propertyId);
+    setShowSearchResults(false);
+    router.push(`/properties/${propertyId}`);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowSearchResults(false);
+  };
+
+  const openSearchWidget = () => {
+    setShowSearchWidget(true);
+    trackEvent('click', 'search_widget', 'open');
+  };
+
+  const closeSearchWidget = () => {
+    setShowSearchWidget(false);
+  };
+
+  const handleWidgetSearch = (results: any[]) => {
+    setSearchResults(results);
+    trackEvent('search', 'widget_search', 'completed');
+  };
+
+  // Close search results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.search-container')) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleCategoryClick = (category: string) => {
     trackEvent('click', 'property_category', category);
@@ -137,21 +232,21 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
                   <div className="flex items-center ">
                     <img 
                       src="/logo-svg.png" 
-                      alt="AtypikHouse Logo" 
+                      alt="Logo AtypikHouse" 
                       className="w-20 h-20 object-contain"
                     />
                     <span className="text-xl font-bold text-gray-900">AtypikHouse</span>
                   </div>
                   
-                  {/* Desktop Navigation */}
-                  <nav className="hidden lg:flex items-center space-x-6">
-                    <a href="#" className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white px-4 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-lg">Accueil</a>
-                    <button onClick={scrollToFooter} className="text-gray-700 border border-gray-300 px-4 py-2 rounded-full font-medium hover:bg-gray-50 transition-colors">Contact</button>
-                    <a 
-                      href="/blog" 
-                      onClick={() => trackEvent('click', 'navigation', 'blog_link')}
-                      className="text-gray-700 border border-gray-300 px-4 py-2 rounded-full font-medium hover:bg-gray-50 transition-colors"
-                    >
+                                      {/* Tablet & Desktop Navigation */}
+                   <nav className="hidden md:flex items-center space-x-3 md:space-x-4 lg:space-x-6">
+                     <a href="#" className="bg-gradient-to-r from-[#3D6B4A] to-[#2C3E37] text-white px-3 md:px-4 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-lg text-sm md:text-base" aria-label="Retour à l'accueil">Accueil</a>
+                     <button onClick={handleContactClick} className="text-gray-700 border border-gray-300 px-3 md:px-4 py-2 rounded-full font-medium hover:bg-gray-50 transition-colors text-sm md:text-base" aria-label="Ouvrir le formulaire de contact">Contact</button>
+                                         <a 
+                       href="/blog" 
+                       onClick={() => trackEvent('click', 'navigation', 'blog_link')}
+                       className="text-gray-700 border border-gray-300 px-3 md:px-4 py-2 rounded-full font-medium hover:bg-gray-50 transition-colors text-sm md:text-base"
+                     >
                       Blog
                     </a>
                   </nav>
@@ -159,28 +254,41 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
                 
                 {/* Right Side - Search and Actions */}
                 <div className="flex items-center space-x-4 lg:space-x-6">
-                  {/* Navigation Links */}
-                  <nav className="hidden lg:flex items-center space-x-4">
-                    <button 
-                      onClick={onConnexionClick}
-                      className="text-gray-700 border border-gray-300 px-4 py-2 rounded-full font-medium hover:bg-gray-50 transition-colors"
+                  {/* Global Search Bar */}
+                  <div className="relative search-container">
+                    <button
+                      onClick={openSearchWidget}
+                      className="search-button w-full sm:w-64 pl-10 pr-4 py-2.5 sm:py-3 rounded-full text-left text-gray-500 transition-all duration-200 flex items-center shadow-sm"
                     >
-                      Connexion
+                      <Search className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 mr-3" />
+                      <span className="text-sm sm:text-base font-medium">Rechercher </span>
                     </button>
-                    <button 
-                      onClick={onInscriptionClick}
-                      className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white px-4 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#4A7C59]/25"
-                    >
+                  </div>
+                  
+                                      {/* Navigation Links */}
+                   <nav className="hidden md:flex items-center space-x-3 md:space-x-4">
+                     <button 
+                       onClick={onConnexionClick}
+                       className="text-gray-700 border border-gray-300 px-3 md:px-4 py-2 rounded-full font-medium hover:bg-gray-50 transition-colors text-sm md:text-base"
+                     >
+                       Connexion
+                     </button>
+                     <button 
+                       onClick={onInscriptionClick}
+                       className="bg-gradient-to-r from-[#3D6B4A] to-[#2C3E37] text-white px-3 md:px-4 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#3D6B4A]/25 text-sm md:text-base"
+                     >
                       Inscription
                     </button>
                   </nav>
                   
                   {/* Mobile Menu Button */}
                   <button 
-                    className="lg:hidden text-gray-700 p-2 border border-gray-300 rounded-full"
+                    className="md:hidden text-gray-700 p-2 border border-gray-300 rounded-full"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                    aria-label="Ouvrir le menu de navigation"
+                    aria-expanded={isMobileMenuOpen}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                   </button>
@@ -190,9 +298,23 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
               {/* Mobile Menu */}
               {isMobileMenuOpen && (
                 <div className="lg:hidden mt-4 pt-4 border-t border-gray-200">
+                  {/* Mobile Search Button */}
+                  <div className="mb-4">
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        openSearchWidget();
+                      }}
+                      className="mobile-search-button w-full pl-10 pr-4 py-3 rounded-full text-left text-gray-500 transition-all duration-200 flex items-center shadow-sm"
+                    >
+                      <Search className="w-4 h-4 text-gray-400 mr-3" />
+                      <span className="text-sm font-medium">Rechercher</span>
+                    </button>
+                  </div>
+                  
                   <nav className="space-y-3">
                     <a href="#" className="block text-gray-700 font-medium">Accueil</a>
-                    <button onClick={scrollToFooter} className="block w-full text-left text-gray-700 font-medium">Contact</button>
+                    <button onClick={handleContactClick} className="block w-full text-left text-gray-700 font-medium">Contact</button>
                     <a 
                       href="/blog" 
                       onClick={() => trackEvent('click', 'navigation', 'blog_link_mobile')}
@@ -217,8 +339,8 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
               )}
             </header>
             
-            {/* Mobile Layout - Single Column */}
-            <div className="lg:hidden space-y-8 sm:space-y-10">
+                          {/* Mobile Layout - Single Column */}
+             <div className="md:hidden space-y-8 sm:space-y-10">
               {/* Main Heading */}
               <div className="text-center space-y-4">
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
@@ -243,7 +365,7 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
                 <div className="flex items-center justify-center space-x-3 pt-2">
                   <button 
                     onClick={handleReserverClick}
-                    className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white px-8 py-4 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#4A7C59]/25 text-sm sm:text-base w-full max-w-xs"
+                    className="bg-gradient-to-r from-[#3D6B4A] to-[#2C3E37] text-white px-8 py-4 rounded-full font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#3D6B4A]/25 text-sm sm:text-base w-full max-w-xs"
                   >
                     Réserver maintenant
                   </button>
@@ -314,8 +436,8 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
               </div>
             </div>
 
-            {/* Desktop Layout - Two Column */}
-            <div className="hidden lg:grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 xl:gap-16 items-start">
+                         {/* Tablet & Desktop Layout - Two Column */}
+             <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-10 lg:gap-12 xl:gap-16 items-start">
               {/* Left Section - Main Heading */}
               <div>
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-tight">
@@ -347,7 +469,7 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
                   <div className="flex items-center space-x-3">
                     <button 
                       onClick={handleReserverClick}
-                      className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#4A7C59]/25 text-sm sm:text-base"
+                      className="bg-gradient-to-r from-[#3D6B4A] to-[#2C3E37] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#3D6B4A]/25 text-sm sm:text-base"
                     >
                       Réserver maintenant
                     </button>
@@ -362,21 +484,21 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
               </div>
             </div>
 
-            {/* Desktop Image Gallery */}
-            <div className="hidden lg:block mt-8 sm:mt-12 lg:mt-16">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                         {/* Tablet & Desktop Image Gallery */}
+             <div className="hidden md:block mt-8 sm:mt-12 md:mt-14 lg:mt-16">
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-7 lg:gap-8">
                 {/* Card 1 - Awesome Views */}
                 <div className="relative group">
                   {/* Image Previews */}
                   <div className="flex space-x-1 sm:space-x-2 mb-3 sm:mb-4">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden">
-                      <img src="/img1.jpg" alt="Preview 1" className="w-full h-full object-cover" />
+                      <img src="/img1.jpg" alt="Aperçu 1" className="w-full h-full object-cover" />
                     </div>
                     <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden">
-                      <img src="/img2.jpg" alt="Preview 2" className="w-full h-full object-cover" />
+                      <img src="/img2.jpg" alt="Aperçu 2" className="w-full h-full object-cover" />
                     </div>
                     <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden">
-                      <img src="/img3.jpg" alt="Preview 3" className="w-full h-full object-cover" />
+                      <img src="/img3.jpg" alt="Aperçu 3" className="w-full h-full object-cover" />
                     </div>
                     <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                       <span className="text-xs font-medium text-gray-600">50+</span>
@@ -429,8 +551,9 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
                       <button 
                         onClick={() => trackEvent('click', 'cta_button', 'more_experiences')}
                         className="w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-full flex items-center justify-center shadow-sm hover:shadow-md transition-shadow"
+                        aria-label="Découvrir plus d'expériences"
                       >
-                        <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-600" />
+                        <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-600" aria-hidden="true" />
                       </button>
                     </div>
                   </div>
@@ -453,6 +576,20 @@ export default function HeroSection({ onReserverClick, onAddPropertyClick, onCon
           </div>
         </div>
       </div>
+
+      {/* ReCAPTCHA Modal */}
+      <ReCaptchaModal 
+        isOpen={showReCaptchaModal} 
+        onSuccess={handleReCaptchaSuccess}
+        onClose={() => setShowReCaptchaModal(false)} 
+      />
+
+      {/* Search Widget */}
+      <SearchWidget
+        isOpen={showSearchWidget}
+        onClose={closeSearchWidget}
+        onSearch={handleWidgetSearch}
+      />
     </section>
   );
 } 
