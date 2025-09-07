@@ -33,6 +33,9 @@ import {
 import { useAuthContext } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import UserMenu from './UserMenu';
+import Breadcrumb, { generateBreadcrumbs } from '@/components/Breadcrumb';
+import { trackCtaClick, trackReservation } from '@/components/GoogleAnalytics';
 
 interface Property {
   id: string;
@@ -107,10 +110,11 @@ export default function GlampingGuestExperience() {
   
   // Real-time status tracking
 
-  // Real-time subscription for bookings updates
+  // Enhanced real-time subscription for bookings updates
   useEffect(() => {
     if (!userProfile?.id) return;
 
+    console.log('🔔 Setting up enhanced real-time subscription for client:', userProfile.id);
     setRealTimeActive(true);
 
     // Subscribe to changes in the bookings table for this client
@@ -125,57 +129,46 @@ export default function GlampingGuestExperience() {
           filter: `client_id=eq.${userProfile.id}`
         },
         (payload) => {
+          console.log('🔔 Real-time booking update received:', payload.eventType, payload);
+          
           if (payload.eventType === 'INSERT') {
-            // New booking created - add it immediately to local state
-            const newBooking = payload.new as any;
-            if (newBooking) {
-              // Transform the data to match our interface
-              const transformedBooking: Booking = {
-                id: newBooking.id,
-                check_in_date: newBooking.check_in_date,
-                check_out_date: newBooking.check_out_date,
-                total_price: newBooking.total_price,
-                status: newBooking.status,
-                guest_count: newBooking.guest_count,
-                special_requests: newBooking.special_requests,
-                full_name: newBooking.full_name,
-                email_or_phone: newBooking.email_or_phone,
-                travel_type: newBooking.travel_type,
-                created_at: newBooking.created_at,
-                properties: {
-                  name: newBooking.property_name || 'Nouvelle propriété',
-                  location: newBooking.property_location || 'Localisation à confirmer',
-                  images: newBooking.property_images || []
-                }
-              };
-              
-              // Add to local state immediately
-              setBookings(prev => [transformedBooking, ...prev]);
-              
-              // Also refresh from server to get complete data
-              setTimeout(() => {
-                loadBookings();
-              }, 1000);
-            }
+            // New booking created - immediately reload to get complete data with joins
+            console.log('➕ New booking detected - reloading all bookings');
+            loadBookings();
+            
+            // Show visual feedback
+            setLastUpdated(new Date());
+            
           } else if (payload.eventType === 'UPDATE') {
-            // Booking updated (status change, etc.)
+            // Booking status or details updated - reload immediately
+            console.log('🔄 Booking updated - reloading all bookings');
             loadBookings();
+            
+            // Show visual feedback
+            setLastUpdated(new Date());
+            
           } else if (payload.eventType === 'DELETE') {
-            // Booking deleted
+            // Booking deleted - reload
+            console.log('🗑️ Booking deleted - reloading all bookings');
             loadBookings();
+            setLastUpdated(new Date());
           }
         }
       )
       .subscribe((status) => {
+        console.log('📡 Real-time subscription status:', status);
         if (status === 'SUBSCRIBED') {
           setRealTimeActive(true);
+          console.log('✅ Real-time subscription active');
         } else if (status === 'CHANNEL_ERROR') {
           setRealTimeActive(false);
+          console.log('❌ Real-time subscription error');
         }
       });
 
     // Cleanup subscription on unmount
     return () => {
+      console.log('🔌 Unsubscribing from real-time bookings');
       subscription.unsubscribe();
       setRealTimeActive(false);
     };
@@ -183,10 +176,16 @@ export default function GlampingGuestExperience() {
 
   // Load initial data
   useEffect(() => {
-    if (userProfile) {
+    if (userProfile?.id) {
+      console.log('✅ Loading data for user:', userProfile.id);
       loadProperties();
       loadBookings();
       setLoading(false);
+    } else if (userProfile === null) {
+      console.log('❌ UserProfile is null - user not authenticated');
+      setLoading(false);
+    } else {
+      console.log('⏳ UserProfile still loading...');
     }
   }, [userProfile]);
 
@@ -219,9 +218,13 @@ export default function GlampingGuestExperience() {
 
   // Check for real-time status updates
   const checkForStatusUpdates = async () => {
-    if (!userProfile?.id) return;
+    if (!userProfile?.id) {
+      console.log('⚠️ Cannot check status updates - no userProfile.id');
+      return;
+    }
     
     try {
+      console.log('🔍 Checking status updates for client:', userProfile.id);
       const response = await fetch(`/api/bookings/client?clientId=${userProfile.id}`);
       const result = await response.json();
       
@@ -237,13 +240,7 @@ export default function GlampingGuestExperience() {
             const statusText = getStatusText(newBooking.status);
             const propertyName = newBooking.properties.name;
             
-            // setStatusNotifications(prev => ({
-            //   ...prev,
-            //   [newBooking.id]: `${propertyName}: ${statusText}`
-            // }));
-            
-            // setShowStatusAlert(true);
-            // setLastStatusUpdate(new Date());
+            console.log('🔄 Status changed for booking:', propertyName, statusText);
             
             // Auto-hide notification after 5 seconds
             setTimeout(() => {
@@ -256,7 +253,7 @@ export default function GlampingGuestExperience() {
         setBookings(newBookings);
       }
     } catch (error) {
-      console.error('Error checking for status updates:', error);
+      console.error('❌ Error checking for status updates:', error);
     }
   };
 
@@ -286,14 +283,21 @@ export default function GlampingGuestExperience() {
   };
 
   const loadBookings = async () => {
+    if (!userProfile?.id) {
+      console.log('⚠️ Cannot load bookings - no userProfile.id');
+      return;
+    }
+    
     setBookingsLoading(true);
     try {
-      const response = await fetch(`/api/bookings/client?clientId=${userProfile!.id}`);
+      console.log('🔍 Loading bookings for client:', userProfile.id);
+      const response = await fetch(`/api/bookings/client?clientId=${userProfile.id}`);
       const result = await response.json();
       
       if (response.ok && result.data) {
         setBookings(result.data);
         setLastUpdated(new Date()); // Update timestamp
+        console.log('✅ Bookings loaded successfully:', result.data.length);
       } else {
         console.error('❌ Error loading bookings:', result.error);
         setBookings([]);
@@ -345,15 +349,15 @@ export default function GlampingGuestExperience() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-green-50 text-green-900 border-green-200';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-yellow-50 text-yellow-900 border-yellow-200';
       case 'cancelled':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-50 text-red-900 border-red-200';
       case 'completed':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-blue-50 text-blue-900 border-blue-200';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-50 text-gray-900 border-gray-200';
     }
   };
 
@@ -430,6 +434,13 @@ export default function GlampingGuestExperience() {
   };
 
   const handlePropertyClick = (propertyId: string) => {
+    // Track CTA click and reservation
+    const property = properties.find(p => p.id === propertyId);
+    if (property) {
+      trackCtaClick('reserver', 'guest_dashboard');
+      trackReservation(property.name, propertyId);
+    }
+    
     // Immediate visual feedback
     setClickedPropertyId(propertyId);
     
@@ -484,6 +495,18 @@ export default function GlampingGuestExperience() {
   // Only show main loading for initial load, not for category changes
   const isInitialLoading = loading && properties.length === 0 && bookings.length === 0;
 
+  // Add safety check for userProfile
+  if (!userProfile) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement du profil utilisateur...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -514,22 +537,23 @@ export default function GlampingGuestExperience() {
               </div>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <button 
-                onClick={handleSignOut}
-                className="flex items-center space-x-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 px-3 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-sm border border-red-200 text-sm"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Déconnexion</span>
-              </button>
+              <UserMenu userName={userProfile?.full_name || 'Client'} />
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Breadcrumb Navigation */}
+      <div className="bg-gray-50 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <Breadcrumb items={generateBreadcrumbs('client-dashboard')} />
         </div>
       </div>
 
       {/* Main Content Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Welcome Banner */}
-        <div className="bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-lg">
+        <div className="bg-gradient-to-r from-[#3D6B4A] to-[#2C3E37] rounded-2xl p-6 sm:p-8 text-white mb-8 shadow-lg">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div className="mb-4 sm:mb-0">
               <div className="flex items-center mb-4">
@@ -557,20 +581,20 @@ export default function GlampingGuestExperience() {
         {/* Modern Tab Navigation */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 sm:mb-8 overflow-hidden">
           <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-2 sm:flex sm:justify-start">
+                         <div className="grid grid-cols-2 sm:grid-cols-2 md:flex md:justify-start">
               {/* Properties Tab */}
             <button
               onClick={() => setActiveTab('properties')}
-                className={`relative group transition-all duration-300 ease-in-out ${
+                                  className={`relative group transition-all duration-300 ease-in-out ${
                 activeTab === 'properties'
-                    ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    ? 'bg-gradient-to-r from-[#3D6B4A]/5 to-[#2C3E37]/5 text-[#3D6B4A]'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
                 <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
                   <div className="relative">
                     <Home className={`w-5 h-5 sm:w-6 transition-all duration-300 ${
-                      activeTab === 'properties' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
+                      activeTab === 'properties' ? 'text-[#3D6B4A]' : 'text-gray-600 group-hover:text-gray-800'
                     }`} />
                   </div>
                   <span className={`text-xs sm:text-sm font-medium transition-all duration-300 ${
@@ -583,8 +607,8 @@ export default function GlampingGuestExperience() {
                   {/* Animated Underline */}
                   <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-out ${
                     activeTab === 'properties' 
-                      ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
-                      : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
+                      ? 'bg-gradient-to-r from-[#3D6B4A] to-[#2C3E37] scale-x-100' 
+                      : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-400'
                   }`} />
               </div>
             </button>
@@ -594,18 +618,18 @@ export default function GlampingGuestExperience() {
               onClick={() => setActiveTab('bookings')}
                 className={`relative group transition-all duration-300 ease-in-out ${
                 activeTab === 'bookings'
-                    ? 'bg-gradient-to-r from-[#4A7C59]/5 to-[#2C3E37]/5 text-[#4A7C59]'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    ? 'bg-gradient-to-r from-[#3D6B4A]/5 to-[#2C3E37]/5 text-[#3D6B4A]'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
                 <div className="flex flex-col items-center justify-center py-4 sm:py-5 px-3 sm:px-6 space-y-2">
                   <div className="relative">
                     <Calendar className={`w-5 h-5 sm:w-6 transition-all duration-300 ${
-                      activeTab === 'bookings' ? 'text-[#4A7C59]' : 'text-gray-500 group-hover:text-gray-700'
+                      activeTab === 'bookings' ? 'text-[#3D6B4A]' : 'text-gray-600 group-hover:text-gray-800'
                     }`} />
                     {/* Badge for booking count */}
                     {bookings.length > 0 && (
-                      <div className="absolute -top-1 -right-1 bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center shadow-lg border-2 border-white transform scale-100 group-hover:scale-110 transition-transform duration-200">
+                      <div className="absolute -top-1 -right-1 bg-gradient-to-r from-[#3D6B4A] to-[#2C3E37] text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center shadow-lg border-2 border-white transform scale-100 group-hover:scale-110 transition-transform duration-200">
                         {bookings.length}
                       </div>
                     )}
@@ -620,8 +644,8 @@ export default function GlampingGuestExperience() {
                   {/* Animated Underline */}
                   <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-300 ease-out ${
                     activeTab === 'bookings' 
-                      ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] scale-x-100' 
-                      : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-300'
+                      ? 'bg-gradient-to-r from-[#3D6B4A] to-[#2C3E37] scale-x-100' 
+                      : 'bg-transparent scale-x-0 group-hover:scale-x-100 group-hover:bg-gray-400'
                   }`} />
                 </div>
               </button>
@@ -691,7 +715,7 @@ export default function GlampingGuestExperience() {
                   </p>
                 </div>
               ) : (
-                <div className={`grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-3 xl:grid-cols-4`}>
+                                 <div className={`grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`}>
                   {currentProperties.map((property) => (
                     <div 
                       key={property.id} 
@@ -718,7 +742,7 @@ export default function GlampingGuestExperience() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                         
                         <div className="absolute bottom-3 left-3">
-                          <span className="bg-[#4A7C59] text-white px-3 py-2 rounded-full text-xs font-medium shadow-lg backdrop-blur-sm">
+                          <span className="bg-[#3D6B4A] text-white px-3 py-2 rounded-full text-xs font-medium shadow-lg backdrop-blur-sm">
                             {getCategoryLabel(property.category)}
                           </span>
                         </div>
@@ -755,7 +779,7 @@ export default function GlampingGuestExperience() {
                         </div>
                         
                         <button 
-                          className={`w-full bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg flex items-center justify-center space-x-2 text-sm sm:text-base group-hover:scale-105 ${
+                          className={`w-full bg-gradient-to-r from-[#3D6B4A] to-[#2C3E37] text-white px-4 py-3 rounded-xl font-medium transition-all hover:shadow-lg flex items-center justify-center space-x-2 text-sm sm:text-base group-hover:scale-105 ${
                             clickedPropertyId === property.id ? 'bg-green-700 shadow-xl' : ''
                           }`}
                           onClick={(e) => {
@@ -807,7 +831,7 @@ export default function GlampingGuestExperience() {
                             onClick={() => goToPage(page)}
                             className={`w-10 h-10 rounded-xl font-medium transition-all duration-300 ${
                               isCurrentPage
-                                ? 'bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] text-white shadow-lg'
+                                ? 'bg-gradient-to-r from-[#3D6B4A] to-[#2C3E37] text-white shadow-lg'
                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
                             }`}
                           >
@@ -917,16 +941,40 @@ export default function GlampingGuestExperience() {
               </div>
             </div>
 
-            {/* Enhanced Header */}
+                          {/* Enhanced Header */}
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Historique des réservations
-              </h2>
-              <p className="text-gray-600 mb-4">
-                Gérez et suivez toutes vos réservations
-              </p>
-              
-              
+              <div className="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                    Historique des réservations
+                  </h2>
+                  <p className="text-gray-600 mb-4">
+                    Gérez et suivez toutes vos réservations
+                  </p>
+                </div>
+                
+                {/* Real-time Status Indicator */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg border ${
+                    realTimeActive 
+                      ? 'bg-green-50 border-green-200 text-green-700' 
+                      : 'bg-red-50 border-red-200 text-red-700'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full ${
+                      realTimeActive ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                    }`}></div>
+                    <span className="text-xs font-medium">
+                      {realTimeActive ? 'Temps réel actif' : 'Temps réel inactif'}
+                    </span>
+                  </div>
+                  
+                  {lastUpdated && (
+                    <div className="text-xs text-gray-500">
+                      Dernière mise à jour: {lastUpdated.toLocaleTimeString('fr-FR')}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Enhanced Filters and Search */}
@@ -1113,7 +1161,7 @@ export default function GlampingGuestExperience() {
                                 setSelectedBooking(booking);
                                 setShowBookingModal(true);
                               }}
-                              className="w-full bg-gradient-to-r from-[#4A7C59] to-[#2C3E37] hover:from-[#2C3E37] hover:to-[#4A7C59] text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#4A7C59]/25 flex items-center justify-center gap-2"
+                              className="w-full bg-gradient-to-r from-[#3D6B4A] to-[#2C3E37] hover:from-[#2C3E37] hover:to-[#3D6B4A] text-white px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-[#3D6B4A]/25 flex items-center justify-center gap-2"
                             >
                               <Eye className="w-4 h-4" />
                               Voir détails
